@@ -15,15 +15,35 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <widget class="ctkCollapsibleButton" name="CTKCollapsibleButton" native="true">
-     <property name="text" stdset="0">
-      <string>Display</string>
+    <widget class="ctkCollapsibleButton" name="ImageCollapsibleButton">
+     <property name="text">
+      <string>Image Coordinate System</string>
      </property>
      <layout class="QVBoxLayout" name="verticalLayout_3">
       <item>
        <widget class="qSlicerFooBarWidget" name="FooBar" native="true"/>
       </item>
      </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="ctkCollapsibleButton" name="PhysicalCollapsibleButton">
+     <property name="text">
+      <string>Physical Coordinate System</string>
+     </property>
+     <property name="contentsFrameShape">
+      <enum>QFrame::StyledPanel</enum>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="ctkCollapsibleButton" name="RegistrationCollapsibleButton">
+     <property name="text">
+      <string>Registration</string>
+     </property>
+     <property name="contentsFrameShape">
+      <enum>QFrame::StyledPanel</enum>
+     </property>
     </widget>
    </item>
    <item>
