@@ -8,20 +8,23 @@ set(${KIT}_INCLUDE_DIRECTORIES
   )
 
 set(${KIT}_SRCS
-  qSlicerFooBarWidget.cxx
-  qSlicerFooBarWidget.h
+  qSlicerRegistrationFiducialsPanelWidget.cxx
+  qSlicerRegistrationFiducialsPanelWidget.h
+  #qSlicerFooBarWidget.cxx
+  #qSlicerFooBarWidget.h
   )
 
 set(${KIT}_MOC_SRCS
-  qSlicerFooBarWidget.h
+  #qSlicerFooBarWidget.h
+  qSlicerRegistrationFiducialsPanelWidget.h
   )
 
 set(${KIT}_UI_SRCS
-  ../Resources/UI/qSlicerFooBarWidget.ui
+  ../Resources/UI/qSlicerRegistrationFiducialsPanelWidget.ui
   )
 
 set(${KIT}_RESOURCES
-  ../Resources/UI/qSlicerFooBarWidget.ui
+  ../Resources/UI/qSlicerRegistrationFiducialsPanelWidget.ui
   )
 
 set(${KIT}_TARGET_LIBRARIES

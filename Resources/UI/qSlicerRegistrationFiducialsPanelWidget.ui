@@ -1,24 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>Form</class>
- <widget class="QWidget" name="Form">
+ <class>qSlicerRegistrationFiducialsPanelWidget</class>
+ <widget class="QWidget" name="qSlicerRegistrationFiducialsPanelWidget">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
-    <height>443</height>
+    <width>463</width>
+    <height>484</height>
    </rect>
   </property>
   <property name="minimumSize">
    <size>
-    <width>400</width>
+    <width>0</width>
     <height>0</height>
    </size>
   </property>
   <property name="maximumSize">
    <size>
-    <width>400</width>
+    <width>16777215</width>
     <height>16777215</height>
    </size>
   </property>
@@ -28,6 +28,12 @@
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
     <widget class="QTabWidget" name="PointsTabWidget">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
      <property name="currentIndex">
       <number>1</number>
      </property>
@@ -43,7 +49,20 @@
         <number>10</number>
        </property>
        <item>
-        <widget class="QTableView" name="ImagePointsTable"/>
+        <widget class="QTableView" name="ImagePointsTable">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>0</height>
+          </size>
+         </property>
+        </widget>
        </item>
        <item>
         <layout class="QHBoxLayout" name="AddRemoveLayout">
@@ -88,6 +107,12 @@
        </item>
        <item>
         <widget class="QGroupBox" name="ImagePointsControlGroupBox">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
          <property name="title">
           <string>Import Option</string>
          </property>
@@ -120,7 +145,23 @@
              <number>1</number>
             </property>
             <item>
-             <widget class="qMRMLNodeComboBox" name="ImagePointsAnnotationNodeSelector"/>
+             <widget class="qMRMLNodeComboBox" name="ImagePointsAnnotationNodeSelector">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>16777215</width>
+                <height>16777215</height>
+               </size>
+              </property>
+              <property name="sizeAdjustPolicy">
+               <enum>QComboBox::AdjustToContents</enum>
+              </property>
+             </widget>
             </item>
             <item>
              <widget class="QPushButton" name="pushButton">
@@ -148,12 +189,22 @@
         <number>10</number>
        </property>
        <item>
-        <widget class="QTableView" name="PhysicalPointsTable"/>
+        <widget class="QTableView" name="PhysicalPointsTable">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+        </widget>
        </item>
        <item>
         <layout class="QHBoxLayout" name="PhysicalPointsControlLayout">
          <property name="spacing">
           <number>1</number>
+         </property>
+         <property name="sizeConstraint">
+          <enum>QLayout::SetDefaultConstraint</enum>
          </property>
          <item>
           <widget class="QPushButton" name="SetPhysicalPoint">
@@ -186,6 +237,12 @@
        </item>
        <item>
         <widget class="QGroupBox" name="groupBox">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
          <property name="title">
           <string>Import Option</string>
          </property>
@@ -223,6 +280,18 @@
             </property>
             <item>
              <widget class="QLineEdit" name="PosPhysicalX">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>16777215</width>
+                <height>16777215</height>
+               </size>
+              </property>
               <property name="readOnly">
                <bool>true</bool>
               </property>
@@ -230,6 +299,18 @@
             </item>
             <item>
              <widget class="QLineEdit" name="PosPhysicalY">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>16777215</width>
+                <height>16777215</height>
+               </size>
+              </property>
               <property name="readOnly">
                <bool>true</bool>
               </property>
@@ -237,6 +318,18 @@
             </item>
             <item>
              <widget class="QLineEdit" name="PosPhysicalZ">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>16777215</width>
+                <height>16777215</height>
+               </size>
+              </property>
               <property name="readOnly">
                <bool>true</bool>
               </property>
@@ -264,7 +357,23 @@
              <number>1</number>
             </property>
             <item>
-             <widget class="ctkDirectoryButton" name="PhysicalPointsFileDirectoryButton"/>
+             <widget class="ctkDirectoryButton" name="PhysicalPointsFileDirectoryButton">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>240</width>
+                <height>16777215</height>
+               </size>
+              </property>
+              <property name="directory">
+               <string>~</string>
+              </property>
+             </widget>
             </item>
             <item>
              <widget class="QPushButton" name="LoadPhysicalPointButton">
@@ -276,7 +385,23 @@
            </layout>
           </item>
           <item row="1" column="1">
-           <widget class="qMRMLNodeComboBox" name="PhysicalTrackingTransformNode"/>
+           <widget class="qMRMLNodeComboBox" name="PhysicalTrackingTransformNode">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>16777207</width>
+              <height>16777215</height>
+             </size>
+            </property>
+            <property name="sizeAdjustPolicy">
+             <enum>QComboBox::AdjustToContents</enum>
+            </property>
+           </widget>
           </item>
          </layout>
         </widget>
@@ -302,6 +427,12 @@
      </item>
      <item row="0" column="1">
       <widget class="QLineEdit" name="NumberOfPoints">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
        <property name="readOnly">
         <bool>true</bool>
        </property>
@@ -315,16 +446,55 @@
       </widget>
      </item>
      <item row="1" column="1">
-      <widget class="qMRMLNodeComboBox" name="OutputTransformNodeSelector"/>
+      <widget class="qMRMLNodeComboBox" name="OutputTransformNodeSelector">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>16777215</width>
+         <height>16777215</height>
+        </size>
+       </property>
+       <property name="sizeAdjustPolicy">
+        <enum>QComboBox::AdjustToContents</enum>
+       </property>
+      </widget>
      </item>
     </layout>
    </item>
    <item>
-    <widget class="QPushButton" name="registerButton">
-     <property name="text">
-      <string>Register</string>
-     </property>
-    </widget>
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <spacer name="horizontalSpacer_3">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="registerButton">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="text">
+        <string>Register</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </item>
   </layout>
  </widget>
