@@ -88,7 +88,7 @@ QIcon qSlicerPointBasedPatientRegistrationModule::icon()const
 //-----------------------------------------------------------------------------
 QStringList qSlicerPointBasedPatientRegistrationModule::categories() const
 {
-  return QStringList() << "Examples";
+  return QStringList() << "IGT";
 }
 
 //-----------------------------------------------------------------------------
