@@ -28,6 +28,7 @@
 #include "qSlicerPointBasedPatientRegistrationModuleWidgetsExport.h"
 
 class qSlicerRegistrationFiducialsPanelWidgetPrivate;
+class vtkMRMLScene;
 
 /// \ingroup Slicer_QtModules_PointBasedPatientRegistration
 class Q_SLICER_MODULE_POINTBASEDPATIENTREGISTRATION_WIDGETS_EXPORT qSlicerRegistrationFiducialsPanelWidget
@@ -38,6 +39,9 @@ public:
   typedef QWidget Superclass;
   qSlicerRegistrationFiducialsPanelWidget(QWidget *parent=0);
   virtual ~qSlicerRegistrationFiducialsPanelWidget();
+
+public slots:
+  virtual void setMRMLScene(vtkMRMLScene *newScene);
 
 protected slots:
 

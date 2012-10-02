@@ -22,6 +22,9 @@
 #include "qSlicerPointBasedPatientRegistrationModuleWidget.h"
 #include "ui_qSlicerPointBasedPatientRegistrationModule.h"
 
+#include "qSlicerApplication.h"
+#include "vtkMRMLScene.h"
+
 //-----------------------------------------------------------------------------
 /// \ingroup Slicer_QtModules_ExtensionTemplate
 class qSlicerPointBasedPatientRegistrationModuleWidgetPrivate: public Ui_qSlicerPointBasedPatientRegistrationModule
@@ -61,3 +64,29 @@ void qSlicerPointBasedPatientRegistrationModuleWidget::setup()
   this->Superclass::setup();
 }
 
+//-----------------------------------------------------------------------------
+void qSlicerPointBasedPatientRegistrationModuleWidget::setMRMLScene(vtkMRMLScene *newScene)
+{
+  Q_D(qSlicerPointBasedPatientRegistrationModuleWidget);
+
+  vtkMRMLScene* oldScene = this->mrmlScene();
+
+  this->Superclass::setMRMLScene(newScene);
+
+  qSlicerApplication * app = qSlicerApplication::application();
+  if (!app)
+    {
+    return;
+    }
+  
+  if (oldScene != newScene)
+    {
+    if (d->RegistrationFiducialsPanel)
+      {
+      d->RegistrationFiducialsPanel->setMRMLScene(newScene);
+      }
+    }
+
+  newScene->InitTraversal();
+
+}

@@ -88,8 +88,26 @@ qSlicerRegistrationFiducialsPanelWidget
   d->PhysicalPointsTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
 }
 
+
 //-----------------------------------------------------------------------------
 qSlicerRegistrationFiducialsPanelWidget
 ::~qSlicerRegistrationFiducialsPanelWidget()
 {
+}
+
+
+//-----------------------------------------------------------------------------
+void qSlicerRegistrationFiducialsPanelWidget
+::setMRMLScene(vtkMRMLScene *newScene)
+{
+  Q_D(qSlicerRegistrationFiducialsPanelWidget);
+
+  if (d->ImagePointsAnnotationNodeSelector)
+    {
+    d->ImagePointsAnnotationNodeSelector->setMRMLScene(newScene);
+    }
+  if (d->PhysicalPointsAnnotationNodeSelector)
+    {
+    d->PhysicalPointsAnnotationNodeSelector->setMRMLScene(newScene);
+    }
 }

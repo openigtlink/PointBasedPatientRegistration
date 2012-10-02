@@ -39,7 +39,7 @@ public:
   virtual ~qSlicerPointBasedPatientRegistrationModuleWidget();
 
 public slots:
-
+  virtual void setMRMLScene(vtkMRMLScene *newScene);
 
 protected:
   QScopedPointer<qSlicerPointBasedPatientRegistrationModuleWidgetPrivate> d_ptr;
