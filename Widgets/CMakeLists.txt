@@ -10,6 +10,8 @@ set(${KIT}_INCLUDE_DIRECTORIES
 set(${KIT}_SRCS
   qSlicerRegistrationFiducialsPanelWidget.cxx
   qSlicerRegistrationFiducialsPanelWidget.h
+  qSlicerRegistrationFiducialsTableModel.cxx
+  qSlicerRegistrationFiducialsTableModel.h
   #qSlicerFooBarWidget.cxx
   #qSlicerFooBarWidget.h
   )
@@ -17,6 +19,7 @@ set(${KIT}_SRCS
 set(${KIT}_MOC_SRCS
   #qSlicerFooBarWidget.h
   qSlicerRegistrationFiducialsPanelWidget.h
+  qSlicerRegistrationFiducialsTableModel.h
   )
 
 set(${KIT}_UI_SRCS

@@ -25,6 +25,8 @@
 #include <QList>
 #include <QTableWidgetSelectionRange>
 
+#include "qSlicerRegistrationFiducialsTableModel.h"
+
 
 //-----------------------------------------------------------------------------
 /// \ingroup Slicer_QtModules_PointBasedPatientRegistration
@@ -39,6 +41,9 @@ public:
   qSlicerRegistrationFiducialsPanelWidgetPrivate(
     qSlicerRegistrationFiducialsPanelWidget& object);
   virtual void setupUi(qSlicerRegistrationFiducialsPanelWidget*);
+
+  qSlicerRegistrationFiducialsTableModel* ImagePointsTableModel;
+  qSlicerRegistrationFiducialsTableModel* PhysicalPointsTableModel;
 };
 
 // --------------------------------------------------------------------------
@@ -71,21 +76,40 @@ qSlicerRegistrationFiducialsPanelWidget
   QStringList list;
   list << tr("Point #") << tr("R") << tr("A") << tr("S");
 
-  d->ImagePointsTable->setRowCount(1);
-  d->ImagePointsTable->setColumnCount(4);
-  d->ImagePointsTable->setHorizontalHeaderLabels(list);
-  d->ImagePointsTable->verticalHeader()->hide();
-  d->ImagePointsTable->setSelectionBehavior(QAbstractItemView::SelectRows);
-  d->ImagePointsTable->setSelectionMode(QAbstractItemView::SingleSelection);
-  d->ImagePointsTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
+  d->ImagePointsTableModel    = new qSlicerRegistrationFiducialsTableModel;
+  d->PhysicalPointsTableModel = new qSlicerRegistrationFiducialsTableModel;
 
-  d->PhysicalPointsTable->setRowCount(1);
-  d->PhysicalPointsTable->setColumnCount(4);
-  d->PhysicalPointsTable->setHorizontalHeaderLabels(list);
-  d->PhysicalPointsTable->verticalHeader()->hide();
-  d->PhysicalPointsTable->setSelectionBehavior(QAbstractItemView::SelectRows);
-  d->PhysicalPointsTable->setSelectionMode(QAbstractItemView::SingleSelection);
-  d->PhysicalPointsTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
+  d->ImagePointsTable->setModel(d->ImagePointsTableModel);
+  d->PhysicalPointsTable->setModel(d->PhysicalPointsTableModel);
+  if (d->ImagePointsAnnotationNodeSelector)
+    {
+    connect(d->ImagePointsAnnotationNodeSelector, SIGNAL(currentNodeChanged(vtkMRMLNode*)),
+            d->ImagePointsTableModel, SLOT(setMRMLNode(vtkMRMLNode*)));
+    }
+  if (d->PhysicalPointsAnnotationNodeSelector)
+    {
+    connect(d->PhysicalPointsAnnotationNodeSelector, SIGNAL(currentNodeChanged(vtkMRMLNode*)),
+            d->PhysicalPointsTableModel, SLOT(setMRMLNode(vtkMRMLNode*)));
+    }
+
+  //d->ImagePointsTable->setRowCount(1);
+  //d->ImagePointsTable->setColumnCount(4);
+  //d->ImagePointsTable->setHorizontalHeaderLabels(list);
+  //d->ImagePointsTable->verticalHeader()->hide();
+  //d->ImagePointsTable->setSelectionBehavior(QAbstractItemView::SelectRows);
+  //d->ImagePointsTable->setSelectionMode(QAbstractItemView::SingleSelection);
+  //d->ImagePointsTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
+
+  //d->PhysicalPointsTable->setRowCount(1);
+  //d->PhysicalPointsTable->setColumnCount(4);
+  //d->PhysicalPointsTable->setHorizontalHeaderLabels(list);
+  //d->PhysicalPointsTable->verticalHeader()->hide();
+  //d->PhysicalPointsTable->setSelectionBehavior(QAbstractItemView::SelectRows);
+  //d->PhysicalPointsTable->setSelectionMode(QAbstractItemView::SingleSelection);
+  //d->PhysicalPointsTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
+
+
+
 }
 
 
@@ -105,6 +129,9 @@ void qSlicerRegistrationFiducialsPanelWidget
   if (d->ImagePointsAnnotationNodeSelector)
     {
     d->ImagePointsAnnotationNodeSelector->setMRMLScene(newScene);
+    // Listen for any new new fiducial points
+    //this->qvtkReconnect(oldScene, newScene, vtkMRMLScene::NodeAddedEvent, 
+    //this, SLOT(onNodeAddedEvent(vtkObject*,vtkObject*)));
     }
   if (d->PhysicalPointsAnnotationNodeSelector)
     {
