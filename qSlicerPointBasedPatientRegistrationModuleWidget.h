@@ -1,8 +1,8 @@
 /*==============================================================================
 
-  Program: 3D Slicer
+  Program: Point-based Registration User Interface for 3D Slicer
 
-  Portions (c) Copyright Brigham and Women's Hospital (BWH) All Rights Reserved.
+  Copyright (c) Brigham and Women's Hospital
 
   See COPYRIGHT.txt
   or http://www.slicer.org/copyright/copyright.txt for details.
@@ -12,6 +12,13 @@
   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
   See the License for the specific language governing permissions and
   limitations under the License.
+
+  This file was originally developed by Jean-Christophe Fillion-Robin, Kitware Inc.
+  and was partially funded by NIH grant 3P41RR013218-12S1
+
+  This file was originally developed by Junichi Tokuda, Brigham and Women's
+  Hospital based on a template developed by Jean-Christophe Fillion-Robin,
+  Kitware Inc. The project was supported by NIH P41EB015898.
 
 ==============================================================================*/
 

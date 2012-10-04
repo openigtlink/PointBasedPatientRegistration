@@ -1,6 +1,6 @@
 /*==============================================================================
 
-  Program: Point-based Registration Interface for 3D Slicer
+  Program: Point-based Registration User Interface for 3D Slicer
 
   Copyright (c) Brigham and Women's Hospital
 
@@ -12,6 +12,9 @@
   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
   See the License for the specific language governing permissions and
   limitations under the License.
+
+  This file was originally developed by Junichi Tokuda, Brigham and Women's
+  Hospital. The project was supported by NIH P41EB015898.
 
 ==============================================================================*/
 
