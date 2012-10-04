@@ -21,7 +21,8 @@
 #ifndef __qSlicerRegistrationFiducialsTableModel_h
 #define __qSlicerRegistrationFiducialsTableModel_h
 
-#include <QAbstractTableModel>
+//#include <QAbstractTableModel>
+#include <QStandardItemModel>
 
 #include <ctkPimpl.h>
 #include <ctkVTKObject.h>
@@ -33,7 +34,8 @@ class vtkMRMLNode;
 class qSlicerRegistrationFiducialsTableModelPrivate;
 
 class Q_SLICER_MODULE_POINTBASEDPATIENTREGISTRATION_WIDGETS_EXPORT qSlicerRegistrationFiducialsTableModel
-  : public QAbstractTableModel
+//  : public QAbstractTableModel
+  : public QStandardItemModel
 {
   Q_OBJECT
   QVTK_OBJECT
@@ -49,25 +51,24 @@ protected:
   qSlicerRegistrationFiducialsTableModel(qSlicerRegistrationFiducialsTableModelPrivate* pimpl, QObject *parent=0);
 
 public:  
-  int rowCount(const QModelIndex &parent) const;
-  int columnCount(const QModelIndex &parent) const;
-  QVariant data(const QModelIndex &index, int role) const;
-  QVariant headerData(int section, Qt::Orientation orientation, int role) const;
-  Qt::ItemFlags flags(const QModelIndex &index) const;
+  //QVariant data(const QModelIndex &index, int role) const;
+  //QVariant headerData(int section, Qt::Orientation orientation, int role) const;
+  //Qt::ItemFlags flags(const QModelIndex &index) const;
   bool setData(const QModelIndex &index, const QVariant &value, int role=Qt::EditRole);
   bool insertRows(int position, int rows, const QModelIndex &index=QModelIndex());
   bool removeRows(int position, int rows, const QModelIndex &index=QModelIndex());
-  QList< QPair<QString, QString> > getList();
+
+  void updateFiducialsFromItem(QStandardItem* item);
+  void updateNode();
 
 public slots:
-  void setMRMLNode(vtkMRMLNode* node);
-  void onNodeAddedEvent(vtkObject* scene, vtkObject* node);
-  void onNodeRemovedEvent(vtkObject* scene, vtkObject* node);
-  void onLayoutChanged(int);
-  
-private:
-  QList< QPair<QString, QString> > listOfPairs;
+  void setNode(vtkMRMLNode* node);
+  void onItemChanged(QStandardItem * item);
+  void onMRMLChildNodeAdded();
+  void onMRMLChildNodeRemoved();
+  void onMRMLChildNodeModified();
 
+  
 protected:
   QScopedPointer<qSlicerRegistrationFiducialsTableModelPrivate> d_ptr;
   

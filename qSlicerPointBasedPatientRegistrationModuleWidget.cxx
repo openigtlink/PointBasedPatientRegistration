@@ -13,9 +13,6 @@
   See the License for the specific language governing permissions and
   limitations under the License.
 
-  This file was originally developed by Jean-Christophe Fillion-Robin, Kitware Inc.
-  and was partially funded by NIH grant 3P41RR013218-12S1
-
   This file was originally developed by Junichi Tokuda, Brigham and Women's
   Hospital based on a template developed by Jean-Christophe Fillion-Robin,
   Kitware Inc. The project was supported by NIH P41EB015898.

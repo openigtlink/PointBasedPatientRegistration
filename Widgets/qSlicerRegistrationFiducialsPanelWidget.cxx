@@ -84,12 +84,12 @@ qSlicerRegistrationFiducialsPanelWidget
   if (d->ImagePointsAnnotationNodeSelector)
     {
     connect(d->ImagePointsAnnotationNodeSelector, SIGNAL(currentNodeChanged(vtkMRMLNode*)),
-            d->ImagePointsTableModel, SLOT(setMRMLNode(vtkMRMLNode*)));
+            d->ImagePointsTableModel, SLOT(setNode(vtkMRMLNode*)));
     }
   if (d->PhysicalPointsAnnotationNodeSelector)
     {
     connect(d->PhysicalPointsAnnotationNodeSelector, SIGNAL(currentNodeChanged(vtkMRMLNode*)),
-            d->PhysicalPointsTableModel, SLOT(setMRMLNode(vtkMRMLNode*)));
+            d->PhysicalPointsTableModel, SLOT(setNode(vtkMRMLNode*)));
     }
 
   //d->ImagePointsTable->setRowCount(1);
