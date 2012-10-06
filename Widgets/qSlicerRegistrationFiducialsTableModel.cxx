@@ -140,7 +140,42 @@ void qSlicerRegistrationFiducialsTableModel
     qvtkReconnect(d->HierarchyNode, node,
                   vtkMRMLHierarchyNode::ChildNodeRemovedEvent,
                   this, SLOT(onMRMLChildNodeRemoved()));
-    // child node change ?
+
+    // Disconnect slots from old child nodes
+    if (d->HierarchyNode)
+      {
+      vtkNew<vtkCollection> collection;
+      d->HierarchyNode->GetDirectChildren(collection.GetPointer());
+      int nItems = collection->GetNumberOfItems();
+      collection->InitTraversal();
+      for (int i = 0; i < nItems; i ++)
+        {
+        vtkMRMLAnnotationFiducialNode* fnode;
+        fnode = vtkMRMLAnnotationFiducialNode::SafeDownCast(collection->GetNextItemAsObject());
+        if (fnode)
+          {
+          qvtkDisconnect(fnode, vtkMRMLAnnotationFiducialNode::ValueModifiedEvent,
+                         this, SLOT(onMRMLChildNodeModified()));
+          }
+        }
+      }
+
+    vtkNew<vtkCollection> collection;
+    // Connect slots to handle chlid node event
+    hnode->GetDirectChildren(collection.GetPointer());
+    int nItems = collection->GetNumberOfItems();
+    collection->InitTraversal();
+    for (int i = 0; i < nItems; i ++)
+      {
+      vtkMRMLAnnotationFiducialNode* fnode;
+      fnode = vtkMRMLAnnotationFiducialNode::SafeDownCast(collection->GetNextItemAsObject());
+      if (fnode)
+        {
+        qvtkConnect(fnode, vtkMRMLAnnotationFiducialNode::ValueModifiedEvent,
+                       this, SLOT(onMRMLChildNodeModified()));
+        }
+      }
+
     d->HierarchyNode = hnode;
     }
 
@@ -263,6 +298,7 @@ void qSlicerRegistrationFiducialsTableModel
 void qSlicerRegistrationFiducialsTableModel
 ::onMRMLChildNodeModified()
 {
+  this->updateTable();
 }
 
 
