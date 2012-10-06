@@ -59,7 +59,7 @@ public:
   bool removeRows(int position, int rows, const QModelIndex &index=QModelIndex());
 
   void updateFiducialsFromItem(QStandardItem* item);
-  void updateNode();
+  void updateTable();
 
 public slots:
   void setNode(vtkMRMLNode* node);

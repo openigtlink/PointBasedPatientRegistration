@@ -144,13 +144,13 @@ void qSlicerRegistrationFiducialsTableModel
     d->HierarchyNode = hnode;
     }
 
-  this->updateNode();
+  this->updateTable();
 }
 
 
 //------------------------------------------------------------------------------
 void qSlicerRegistrationFiducialsTableModel
-::updateNode()
+::updateTable()
 {
   Q_D(qSlicerRegistrationFiducialsTableModel);
 
@@ -250,18 +250,14 @@ void qSlicerRegistrationFiducialsTableModel
 void qSlicerRegistrationFiducialsTableModel
 ::onMRMLChildNodeAdded()
 {
-//  if (d->HierarchyNode = node)
-//    {
-//    emit(dataChanged(index, index));
-//    }
-  this->updateNode();
+  this->updateTable();
 }
 
 
 void qSlicerRegistrationFiducialsTableModel
 ::onMRMLChildNodeRemoved()
 {
-  this->updateNode();
+  this->updateTable();
 }
 
 void qSlicerRegistrationFiducialsTableModel
