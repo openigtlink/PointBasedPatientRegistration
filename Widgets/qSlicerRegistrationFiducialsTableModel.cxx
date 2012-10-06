@@ -65,7 +65,7 @@ void qSlicerRegistrationFiducialsTableModelPrivate
   Q_Q(qSlicerRegistrationFiducialsTableModel);
   q->setColumnCount(4);
   q->setHorizontalHeaderLabels(QStringList()
-                               << "Point #"
+                               << "Point Name"
                                << "R"
                                << "A"
                                << "S");
@@ -77,7 +77,6 @@ void qSlicerRegistrationFiducialsTableModelPrivate
 
 qSlicerRegistrationFiducialsTableModel
 ::qSlicerRegistrationFiducialsTableModel(QObject *parent)
-//: QAbstractTableModel(parent)
   : QStandardItemModel(parent)
   , d_ptr( new qSlicerRegistrationFiducialsTableModelPrivate(*this) )
 {
@@ -92,7 +91,6 @@ qSlicerRegistrationFiducialsTableModel
 
 qSlicerRegistrationFiducialsTableModel
 ::qSlicerRegistrationFiducialsTableModel(qSlicerRegistrationFiducialsTableModelPrivate* pimpl, QObject *parent)
-//: QAbstractTableModel(parent)
   : QStandardItemModel(parent)
   , d_ptr(pimpl)
 {
@@ -101,78 +99,24 @@ qSlicerRegistrationFiducialsTableModel
 }
 
 
-  
-//int qSlicerRegistrationFiducialsTableModel
-//::rowCount(const QModelIndex &parent) const
-//{
-//  Q_D(qSlicerRegistrationFiducialsTableModel);
-//
-//  if (d->HierarchyNode)
-//    {
-//    vtkNew<vtkCollection> collection;
-//    d->HierarchyNode->GetDirectChildren(collection);
-//    int n = collection->GetNumberOfItems();
-//    int nFiducials = 0;
-//    if (int i = 0; i < n; i ++)
-//      {
-//      vtkMRMLAnnotationFiducialNode* fnode;
-//      fnode = vtkMRMLAnnotationFiducialNode::SafeDownCast(collection->GetNextItemAsObject());
-//      if (fnode)
-//        nFiducials ++;
-//      }
-//    }
-//}
-
-
-//QVariant qSlicerRegistrationFiducialsTableModel
-//::headerData(int section, Qt::Orientation orientation, int role) const
-//{
-//  if (role != Qt::DisplayRole)
-//    return QVariant();
-//  
-//  if (orientation == Qt::Horizontal) {
-//    switch (section) {
-//    case 0:
-//      return tr("Point #");
-//      
-//    case 1:
-//      return tr("R");
-//
-//    case 2:
-//      return tr("A");
-//
-//    case 3:
-//      return tr("S");
-//      
-//    default:
-//      return QVariant();
-//    }
-//  }
-//  return QVariant();
-//}
-
-
-//Qt::ItemFlags qSlicerRegistrationFiducialsTableModel
-//::flags(const QModelIndex &index) const
-//{
-//}
-
-
 bool qSlicerRegistrationFiducialsTableModel
 ::setData(const QModelIndex &index, const QVariant &value, int role)
 {
+  return true;
 }
 
 
 bool qSlicerRegistrationFiducialsTableModel
 ::insertRows(int position, int rows, const QModelIndex &index)
 {
+  return true;
 }
 
 
 bool qSlicerRegistrationFiducialsTableModel
 ::removeRows(int position, int rows, const QModelIndex &index)
 {
+  return true;
 }
 
 
@@ -222,10 +166,10 @@ void qSlicerRegistrationFiducialsTableModel
   // Count the number of child Fiducial nodes 
   vtkNew<vtkCollection> collection;
   d->HierarchyNode->GetDirectChildren(collection.GetPointer());
-  int n = collection->GetNumberOfItems();
+  int nItems = collection->GetNumberOfItems();
   int nFiducials = 0;
   collection->InitTraversal();
-  for (int i = 0; i < n; i ++)
+  for (int i = 0; i < nItems; i ++)
     {
     vtkMRMLAnnotationFiducialNode* fnode;
     fnode = vtkMRMLAnnotationFiducialNode::SafeDownCast(collection->GetNextItemAsObject());
@@ -237,19 +181,29 @@ void qSlicerRegistrationFiducialsTableModel
   this->setRowCount(nFiducials);
 
   collection->InitTraversal();
-  for (int i = 0; i < nFiducials; i ++)
+  for (int i = 0; i < nItems; i ++)
     {
     vtkMRMLAnnotationFiducialNode* fnode;
     fnode = vtkMRMLAnnotationFiducialNode::SafeDownCast(collection->GetNextItemAsObject());
     if (fnode)
       {
       QStandardItem* item = this->invisibleRootItem()->child(i, 0);
+      if (item == NULL)
+        {
+        item = new QStandardItem();
+        this->invisibleRootItem()->setChild(i, 0, item);
+        }
       item->setText(fnode->GetName());
       item->setData(QVariant(),Qt::SizeHintRole);
 
       for (int j = 0; j < 3; j ++)
         {
         QStandardItem* item = this->invisibleRootItem()->child(i, j+1);
+        if (item == NULL)
+          {
+          item = new QStandardItem();
+          this->invisibleRootItem()->setChild(i, j+1, item);
+          }
         QString str;
         str.setNum(fnode->GetFiducialCoordinates()[j]);
         item->setText(str);
@@ -300,18 +254,19 @@ void qSlicerRegistrationFiducialsTableModel
 //    {
 //    emit(dataChanged(index, index));
 //    }
+  this->updateNode();
 }
 
 
 void qSlicerRegistrationFiducialsTableModel
 ::onMRMLChildNodeRemoved()
 {
+  this->updateNode();
 }
 
 void qSlicerRegistrationFiducialsTableModel
 ::onMRMLChildNodeModified()
 {
-  
 }
 
 
