@@ -73,11 +73,8 @@ qSlicerRegistrationFiducialsPanelWidget
   Q_D(qSlicerRegistrationFiducialsPanelWidget);
   d->setupUi(this);
 
-  QStringList list;
-  list << tr("Point #") << tr("R") << tr("A") << tr("S");
-
-  d->ImagePointsTableModel    = new qSlicerRegistrationFiducialsTableModel;
-  d->PhysicalPointsTableModel = new qSlicerRegistrationFiducialsTableModel;
+  d->ImagePointsTableModel    = new qSlicerRegistrationFiducialsTableModel(this);
+  d->PhysicalPointsTableModel = new qSlicerRegistrationFiducialsTableModel(this);
 
   d->ImagePointsTable->setModel(d->ImagePointsTableModel);
   d->PhysicalPointsTable->setModel(d->PhysicalPointsTableModel);
@@ -91,24 +88,6 @@ qSlicerRegistrationFiducialsPanelWidget
     connect(d->PhysicalPointsAnnotationNodeSelector, SIGNAL(currentNodeChanged(vtkMRMLNode*)),
             d->PhysicalPointsTableModel, SLOT(setNode(vtkMRMLNode*)));
     }
-
-  //d->ImagePointsTable->setRowCount(1);
-  //d->ImagePointsTable->setColumnCount(4);
-  //d->ImagePointsTable->setHorizontalHeaderLabels(list);
-  //d->ImagePointsTable->verticalHeader()->hide();
-  //d->ImagePointsTable->setSelectionBehavior(QAbstractItemView::SelectRows);
-  //d->ImagePointsTable->setSelectionMode(QAbstractItemView::SingleSelection);
-  //d->ImagePointsTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
-
-  //d->PhysicalPointsTable->setRowCount(1);
-  //d->PhysicalPointsTable->setColumnCount(4);
-  //d->PhysicalPointsTable->setHorizontalHeaderLabels(list);
-  //d->PhysicalPointsTable->verticalHeader()->hide();
-  //d->PhysicalPointsTable->setSelectionBehavior(QAbstractItemView::SelectRows);
-  //d->PhysicalPointsTable->setSelectionMode(QAbstractItemView::SingleSelection);
-  //d->PhysicalPointsTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
-
-
 
 }
 

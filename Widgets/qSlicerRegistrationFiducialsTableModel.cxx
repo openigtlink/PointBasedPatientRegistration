@@ -42,6 +42,8 @@ class Q_SLICER_MODULE_POINTBASEDPATIENTREGISTRATION_WIDGETS_EXPORT qSlicerRegist
 
   void init();
   vtkMRMLAnnotationHierarchyNode* HierarchyNode;
+
+  int PendingItemModified; // -1 means not updating
 };
 
 qSlicerRegistrationFiducialsTableModelPrivate
@@ -50,6 +52,7 @@ qSlicerRegistrationFiducialsTableModelPrivate
   : q_ptr(&object)
 {
   this->HierarchyNode = NULL;
+  this->PendingItemModified = -1; // -1 means not updating
 }
 
 qSlicerRegistrationFiducialsTableModelPrivate
@@ -71,8 +74,8 @@ void qSlicerRegistrationFiducialsTableModelPrivate
                                << "A"
                                << "S");
   QObject::connect(q, SIGNAL(itemChanged(QStandardItem*)),
-                   q, SLOT(onItemChanged(QStandardItem*)),
-                   Qt::UniqueConnection);
+                   q, SLOT(onItemChanged(QStandardItem*)));
+
 }
 
 
@@ -97,27 +100,6 @@ qSlicerRegistrationFiducialsTableModel
 {
   Q_D(qSlicerRegistrationFiducialsTableModel);
   d->init();
-}
-
-
-bool qSlicerRegistrationFiducialsTableModel
-::setData(const QModelIndex &index, const QVariant &value, int role)
-{
-  return true;
-}
-
-
-bool qSlicerRegistrationFiducialsTableModel
-::insertRows(int position, int rows, const QModelIndex &index)
-{
-  return true;
-}
-
-
-bool qSlicerRegistrationFiducialsTableModel
-::removeRows(int position, int rows, const QModelIndex &index)
-{
-  return true;
 }
 
 
@@ -202,8 +184,11 @@ void qSlicerRegistrationFiducialsTableModel
     return;
     }
 
-  QObject::disconnect(this, SIGNAL(itemChanged(QStandardItem*)),
-                      this, SLOT(onItemChanged(QStandardItem*)));
+  d->PendingItemModified = 0;
+
+
+  //QObject::disconnect(this, SIGNAL(itemChanged(QStandardItem*)),
+  //                    this, SLOT(onItemChanged(QStandardItem*)));
 
   // Count the number of child Fiducial nodes 
   vtkNew<vtkCollection> collection;
@@ -236,7 +221,8 @@ void qSlicerRegistrationFiducialsTableModel
         this->invisibleRootItem()->setChild(i, 0, item);
         }
       item->setText(fnode->GetName());
-      item->setData(QVariant(),Qt::SizeHintRole);
+      //item->setData(QVariant(),Qt::SizeHintRole);
+      item->setData(fnode->GetID(),qSlicerRegistrationFiducialsTableModel::NodeIDRole);
 
       for (int j = 0; j < 3; j ++)
         {
@@ -249,31 +235,90 @@ void qSlicerRegistrationFiducialsTableModel
         QString str;
         str.setNum(fnode->GetFiducialCoordinates()[j]);
         item->setText(str);
-        item->setData(QVariant(),Qt::SizeHintRole);
+        //item->setData(QVariant(),Qt::SizeHintRole);
         }
       }
     }
 
-  QObject::connect(this, SIGNAL(itemChanged(QStandardItem*)),
-                   this, SLOT(onItemChanged(QStandardItem*)),
-                   Qt::UniqueConnection);
+  //QObject::connect(this, SIGNAL(itemChanged(QStandardItem*)),
+  //this, SLOT(onItemChanged(QStandardItem*)));
+  d->PendingItemModified = -1;
+
 }
 
-
-void qSlicerRegistrationFiducialsTableModel
-::updateFiducialsFromItem(QStandardItem* item)
-{
-  item->row();
-}
 
 void qSlicerRegistrationFiducialsTableModel
 ::onItemChanged(QStandardItem * item)
 {
+  Q_D(qSlicerRegistrationFiducialsTableModel);
+
   if (item == this->invisibleRootItem())
     {
     return;
     }
-  this->updateFiducialsFromItem(item);
+  if (d->PendingItemModified >= 0)
+    {
+    return;
+    }
+
+  // TODO:  item->parent()-> does not work here...
+  QStandardItem* nameItem = this->invisibleRootItem()->child(item->row(), 0);
+  if (nameItem)
+    {
+    QString id = nameItem->data(qSlicerRegistrationFiducialsTableModel::NodeIDRole).toString();
+
+    // Find fiducial node from item
+    vtkNew<vtkCollection> collection;
+    d->HierarchyNode->GetDirectChildren(collection.GetPointer());
+    int nItems = collection->GetNumberOfItems();
+    int nFiducials = 0;
+    collection->InitTraversal();
+    for (int i = 0; i < nItems; i ++)
+      {
+      vtkMRMLAnnotationFiducialNode* fnode;
+      fnode = vtkMRMLAnnotationFiducialNode::SafeDownCast(collection->GetNextItemAsObject());
+      if (fnode)
+        {
+        if (id == fnode->GetID())
+          {
+          QString qstr = item->text();
+          double coord[3];
+          switch (item->column())
+            {
+            case 0:
+              {
+              const char* str = qstr.toAscii();
+              fnode->SetName(str);
+              break;
+              }
+            case 1:
+              {
+              fnode->GetFiducialCoordinates(coord);
+              coord[0] = qstr.toDouble();
+              fnode->SetFiducialCoordinates(coord);
+              break;
+              }              
+            case 2:
+              {
+              fnode->GetFiducialCoordinates(coord);
+              coord[1] = qstr.toDouble();
+              fnode->SetFiducialCoordinates(coord);
+              break;
+              }              
+            case 3:
+              {
+              fnode->GetFiducialCoordinates(coord);
+              coord[2] = qstr.toDouble();
+              fnode->SetFiducialCoordinates(coord);
+              break;
+              }              
+            }
+          fnode->Modified();
+          this->updateTable();
+          }
+        }
+      }
+    }
 }
 
 

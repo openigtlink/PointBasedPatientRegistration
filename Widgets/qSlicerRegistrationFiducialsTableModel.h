@@ -47,18 +47,18 @@ public:
   virtual ~qSlicerRegistrationFiducialsTableModel();
   qSlicerRegistrationFiducialsTableModel(QList< QPair<QString, QString> > listofPairs, QObject *parent=0);
 
+  enum ItemDataRole {
+    NodeIDRole = Qt::UserRole,
+  };
+
 protected:
   qSlicerRegistrationFiducialsTableModel(qSlicerRegistrationFiducialsTableModelPrivate* pimpl, QObject *parent=0);
 
 public:  
-  bool setData(const QModelIndex &index, const QVariant &value, int role=Qt::EditRole);
-  bool insertRows(int position, int rows, const QModelIndex &index=QModelIndex());
-  bool removeRows(int position, int rows, const QModelIndex &index=QModelIndex());
-
   void updateFiducialsFromItem(QStandardItem* item);
   void updateTable();
 
-public slots:
+protected slots:
   void setNode(vtkMRMLNode* node);
   void onItemChanged(QStandardItem * item);
   void onMRMLChildNodeAdded();
