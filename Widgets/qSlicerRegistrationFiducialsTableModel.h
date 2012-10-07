@@ -62,8 +62,8 @@ public slots:
   void setNode(vtkMRMLNode* node);
   void onItemChanged(QStandardItem * item);
   void onMRMLChildNodeAdded();
-  void onMRMLChildNodeRemoved();
-  void onMRMLChildNodeModified();
+  void onMRMLChildNodeHierarchyModified(vtkObject*);
+  void onMRMLChildNodeValueModified(vtkObject*);
 
   
 protected:
