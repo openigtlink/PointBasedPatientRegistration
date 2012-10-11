@@ -75,6 +75,8 @@ qSlicerRegistrationFiducialsPanelWidget
 
   d->ImagePointsTableModel    = new qSlicerRegistrationFiducialsTableModel(this);
   d->PhysicalPointsTableModel = new qSlicerRegistrationFiducialsTableModel(this);
+  d->ImagePointsTableModel->setCoordinateLabel(qSlicerRegistrationFiducialsTableModel::LABEL_RAS);
+  d->PhysicalPointsTableModel->setCoordinateLabel(qSlicerRegistrationFiducialsTableModel::LABEL_XYZ);
 
   d->ImagePointsTable->setModel(d->ImagePointsTableModel);
   d->PhysicalPointsTable->setModel(d->PhysicalPointsTableModel);

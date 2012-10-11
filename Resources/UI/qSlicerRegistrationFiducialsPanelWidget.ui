@@ -35,7 +35,7 @@
       </sizepolicy>
      </property>
      <property name="currentIndex">
-      <number>0</number>
+      <number>1</number>
      </property>
      <widget class="QWidget" name="ImagePointsTab">
       <attribute name="title">
@@ -260,7 +260,7 @@
           <item row="3" column="0">
            <widget class="QLabel" name="CurrentPositionLabel">
             <property name="text">
-             <string>Tracker:</string>
+             <string>Pointer</string>
             </property>
            </widget>
           </item>

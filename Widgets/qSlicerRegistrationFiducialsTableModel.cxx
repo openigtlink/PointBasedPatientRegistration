@@ -174,6 +174,36 @@ void qSlicerRegistrationFiducialsTableModel
 
 //------------------------------------------------------------------------------
 void qSlicerRegistrationFiducialsTableModel
+::setCoordinateLabel(int m)
+{
+  Q_D(qSlicerRegistrationFiducialsTableModel);
+
+  QStringList list;
+  
+  switch (m)
+    {
+    case LABEL_RAS:
+      {
+      list << "Point Name" << "R" << "A" << "S";
+      break;
+      }
+    case LABEL_XYZ:
+      {
+      list << "Point Name" << "X" << "Y" << "Z";
+      break;
+      }
+    default:
+      {
+      return;
+      break;
+      }
+    }
+  this->setHorizontalHeaderLabels(list);
+}
+
+
+//------------------------------------------------------------------------------
+void qSlicerRegistrationFiducialsTableModel
 ::updateTable()
 {
   Q_D(qSlicerRegistrationFiducialsTableModel);

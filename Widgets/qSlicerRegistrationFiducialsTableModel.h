@@ -50,12 +50,16 @@ public:
   enum ItemDataRole {
     NodeIDRole = Qt::UserRole,
   };
+  enum CoordinateLabel {
+    LABEL_RAS = 1,
+    LABEL_XYZ = 2,
+  };
 
 protected:
   qSlicerRegistrationFiducialsTableModel(qSlicerRegistrationFiducialsTableModelPrivate* pimpl, QObject *parent=0);
 
 public:  
-  void updateFiducialsFromItem(QStandardItem* item);
+  void setCoordinateLabel(int m); // LABEL_RAS or LABEL_XYZ
   void updateTable();
 
 protected slots:
