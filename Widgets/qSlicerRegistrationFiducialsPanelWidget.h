@@ -23,18 +23,22 @@
 
 // Qt includes
 #include <QWidget>
+#include <ctkVTKObject.h>
 
 // RegistrationFiducialsPanel Widgets includes
 #include "qSlicerPointBasedPatientRegistrationModuleWidgetsExport.h"
 
 class qSlicerRegistrationFiducialsPanelWidgetPrivate;
+class vtkObject;
 class vtkMRMLScene;
+class vtkMRMLNode;
 
 /// \ingroup Slicer_QtModules_PointBasedPatientRegistration
 class Q_SLICER_MODULE_POINTBASEDPATIENTREGISTRATION_WIDGETS_EXPORT qSlicerRegistrationFiducialsPanelWidget
   : public QWidget
 {
   Q_OBJECT
+  QVTK_OBJECT
 public:
   typedef QWidget Superclass;
   qSlicerRegistrationFiducialsPanelWidget(QWidget *parent=0);
@@ -42,10 +46,13 @@ public:
 
 public slots:
   virtual void setMRMLScene(vtkMRMLScene *newScene);
+  void setTrackerTransform(vtkMRMLNode*);
+  void onTrackerTransformModified();
 
 protected slots:
   void clearImagePoints();
   void clearPhysicalPoints();
+  void addPhysicalPoint();
 
 protected:
   QScopedPointer<qSlicerRegistrationFiducialsPanelWidgetPrivate> d_ptr;

@@ -62,6 +62,7 @@ protected:
 public:  
   void setCoordinateLabel(int m); // LABEL_RAS or LABEL_XYZ
   void updateTable();
+  void addPoint(double x, double y, double z);
 
 public slots:
   void setMRMLScene(vtkMRMLScene *newScene);

@@ -26,7 +26,11 @@
 #include <QTableWidgetSelectionRange>
 
 #include "qSlicerRegistrationFiducialsTableModel.h"
+
+#include "vtkObject.h"
+#include "vtkMatrix4x4.h"
 #include "vtkMRMLAnnotationHierarchyNode.h"
+#include "vtkMRMLLinearTransformNode.h"
 
 //-----------------------------------------------------------------------------
 /// \ingroup Slicer_QtModules_PointBasedPatientRegistration
@@ -44,6 +48,8 @@ public:
 
   qSlicerRegistrationFiducialsTableModel* ImagePointsTableModel;
   qSlicerRegistrationFiducialsTableModel* PhysicalPointsTableModel;
+  vtkMRMLLinearTransformNode* TrackerTransform;
+
 };
 
 // --------------------------------------------------------------------------
@@ -103,6 +109,16 @@ qSlicerRegistrationFiducialsPanelWidget
     connect(d->ClearPhysicalPointsButton, SIGNAL(clicked()),
             this, SLOT(clearPhysicalPoints()));
     }
+  if (d->AddPhysicalPointButton)
+    {
+    connect(d->AddPhysicalPointButton, SIGNAL(clicked()),
+            this, SLOT(addPhysicalPoint()));
+    }
+  if (d->TrackerTransformNodeSelector)
+    {
+    connect(d->TrackerTransformNodeSelector, SIGNAL(currentNodeChanged(vtkMRMLNode*)),
+            this, SLOT(setTrackerTransform(vtkMRMLNode*)));
+    }
 
 }
 
@@ -139,8 +155,43 @@ void qSlicerRegistrationFiducialsPanelWidget
     {
     d->PhysicalPointsTableModel->setMRMLScene(newScene);
     }
+  if (d->TrackerTransformNodeSelector)
+    {
+    d->TrackerTransformNodeSelector->setMRMLScene(newScene);
+    }
 
 }
+
+//-----------------------------------------------------------------------------
+void qSlicerRegistrationFiducialsPanelWidget
+::setTrackerTransform(vtkMRMLNode* o)
+{
+  Q_D(qSlicerRegistrationFiducialsPanelWidget);
+
+  vtkMRMLLinearTransformNode* trans = vtkMRMLLinearTransformNode::SafeDownCast(o);
+  if (trans)
+    {
+    qvtkReconnect(d->TrackerTransform, trans,
+                  vtkMRMLTransformableNode::TransformModifiedEvent, 
+                  this, SLOT(onTrackerTransformModified()));
+    d->TrackerTransform = trans;
+    }
+}
+
+
+//-----------------------------------------------------------------------------
+void qSlicerRegistrationFiducialsPanelWidget
+::onTrackerTransformModified()
+{
+  Q_D(qSlicerRegistrationFiducialsPanelWidget);
+
+  vtkMatrix4x4* matrix = d->TrackerTransform->GetMatrixTransformToParent();
+  QString buf;
+  d->PositionXEdit->setText(buf.setNum(matrix->Element[0][3]));
+  d->PositionYEdit->setText(buf.setNum(matrix->Element[1][3]));
+  d->PositionZEdit->setText(buf.setNum(matrix->Element[2][3]));
+}
+
 
 
 //-----------------------------------------------------------------------------
@@ -177,3 +228,19 @@ void qSlicerRegistrationFiducialsPanelWidget
       }
     }
 }
+
+
+//-----------------------------------------------------------------------------
+void qSlicerRegistrationFiducialsPanelWidget
+::addPhysicalPoint()
+{
+  Q_D(qSlicerRegistrationFiducialsPanelWidget);
+  if (d->TrackerTransform && d->PhysicalPointsTableModel)
+    {
+    vtkMatrix4x4* matrix = d->TrackerTransform->GetMatrixTransformToParent();
+    QString buf;
+    d->PhysicalPointsTableModel->addPoint(matrix->Element[0][3], matrix->Element[1][3], matrix->Element[2][3]);
+    }
+}
+
+

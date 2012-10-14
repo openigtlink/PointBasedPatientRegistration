@@ -35,7 +35,7 @@
       </sizepolicy>
      </property>
      <property name="currentIndex">
-      <number>0</number>
+      <number>1</number>
      </property>
      <widget class="QWidget" name="ImagePointsTab">
       <attribute name="title">
@@ -205,9 +205,9 @@
           <enum>QLayout::SetDefaultConstraint</enum>
          </property>
          <item>
-          <widget class="QPushButton" name="SetPhysicalPoint">
+          <widget class="QPushButton" name="AddPhysicalPointButton">
            <property name="text">
-            <string>Set</string>
+            <string>+</string>
            </property>
           </widget>
          </item>
@@ -270,7 +270,21 @@
              <number>1</number>
             </property>
             <item>
-             <widget class="qMRMLNodeComboBox" name="PhysicalTrackingTransformNode">
+             <widget class="qMRMLNodeComboBox" name="TrackerTransformNodeSelector">
+              <property name="nodeTypes">
+               <stringlist>
+                <string>vtkMRMLLinearTransformNode</string>
+               </stringlist>
+              </property>
+              <property name="noneEnabled">
+               <bool>true</bool>
+              </property>
+              <property name="editEnabled">
+               <bool>true</bool>
+              </property>
+              <property name="renameEnabled">
+               <bool>true</bool>
+              </property>
               <property name="sizeAdjustPolicy">
                <enum>QComboBox::AdjustToMinimumContentsLength</enum>
               </property>
@@ -281,7 +295,7 @@
           <item row="4" column="0">
            <widget class="QLabel" name="LoadFileLabel">
             <property name="text">
-             <string>Load File:</string>
+             <string>Current</string>
             </property>
            </widget>
           </item>
@@ -291,28 +305,44 @@
              <number>1</number>
             </property>
             <item>
-             <widget class="ctkDirectoryButton" name="PhysicalPointsFileDirectoryButton">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="maximumSize">
-               <size>
-                <width>240</width>
-                <height>16777215</height>
-               </size>
-              </property>
-              <property name="directory">
-               <string>~</string>
+             <widget class="QLabel" name="PositionXLabel">
+              <property name="text">
+               <string> X:</string>
               </property>
              </widget>
             </item>
             <item>
-             <widget class="QPushButton" name="LoadPhysicalPointButton">
+             <widget class="QLineEdit" name="PositionXEdit">
+              <property name="readOnly">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="PositionYLabel">
               <property name="text">
-               <string>Load</string>
+               <string>  Y:</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLineEdit" name="PositionYEdit">
+              <property name="readOnly">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="PositionZLabel">
+              <property name="text">
+               <string>  Z:</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLineEdit" name="PositionZEdit">
+              <property name="readOnly">
+               <bool>true</bool>
               </property>
              </widget>
             </item>
@@ -427,11 +457,6 @@
    <class>qMRMLNodeComboBox</class>
    <extends>QWidget</extends>
    <header>qMRMLNodeComboBox.h</header>
-  </customwidget>
-  <customwidget>
-   <class>ctkDirectoryButton</class>
-   <extends>QWidget</extends>
-   <header>ctkDirectoryButton.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

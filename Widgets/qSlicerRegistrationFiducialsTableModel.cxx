@@ -29,6 +29,7 @@
 #include "vtkCollection.h"
 
 #include <map>
+#include <sstream>
 
 class Q_SLICER_MODULE_POINTBASEDPATIENTREGISTRATION_WIDGETS_EXPORT qSlicerRegistrationFiducialsTableModelPrivate
 {
@@ -281,6 +282,33 @@ void qSlicerRegistrationFiducialsTableModel
   d->PendingItemModified = -1;
 
 }
+
+
+//-----------------------------------------------------------------------------
+void qSlicerRegistrationFiducialsTableModel
+::addPoint(double x, double y, double z)
+{
+  Q_D(qSlicerRegistrationFiducialsTableModel);
+
+//  if (d->Scene && d->HierarchyNode)
+//    {
+//    // Generate fiducial point name
+//    vtkNew<vtkCollection> collection;
+//    d->HierarchyNode->GetDirectChildren(collection.GetPointer());
+//    int nItems = collection->GetNumberOfItems();
+//
+//    std::stringstream ss;
+//    ss << "Physical_" << (nItems+1);
+//
+//    vtkSmartPointer< vtkMRMLAnnotationFiducialNode > fid = vtkSmartPointer< vtkMRMLAnnotationFiducialNode >::New();
+//    fid->SetName(ss.str().c_str());
+//    fid->SetFiducialCoordinates(x, y, z) 
+//    d->Scene->AddNode(fid);
+//    fid->SetParentNodeID(d->HierarchyNode->GetID());
+//    this->updateTable();
+//    }
+}
+
 
 //-----------------------------------------------------------------------------
 void qSlicerRegistrationFiducialsTableModel
