@@ -44,6 +44,8 @@ public slots:
   virtual void setMRMLScene(vtkMRMLScene *newScene);
 
 protected slots:
+  void clearImagePoints();
+  void clearPhysicalPoints();
 
 protected:
   QScopedPointer<qSlicerRegistrationFiducialsPanelWidgetPrivate> d_ptr;

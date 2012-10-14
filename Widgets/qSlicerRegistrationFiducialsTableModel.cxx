@@ -23,6 +23,7 @@
 
 #include "vtkMRMLAnnotationHierarchyNode.h"
 #include "vtkMRMLAnnotationFiducialNode.h"
+#include "vtkMRMLScene.h"
 
 #include "vtkNew.h"
 #include "vtkCollection.h"
@@ -44,6 +45,8 @@ class Q_SLICER_MODULE_POINTBASEDPATIENTREGISTRATION_WIDGETS_EXPORT qSlicerRegist
   vtkMRMLAnnotationHierarchyNode* HierarchyNode;
 
   int PendingItemModified; // -1 means not updating
+
+  vtkMRMLScene* Scene;
 };
 
 qSlicerRegistrationFiducialsTableModelPrivate
@@ -53,6 +56,7 @@ qSlicerRegistrationFiducialsTableModelPrivate
 {
   this->HierarchyNode = NULL;
   this->PendingItemModified = -1; // -1 means not updating
+  this->Scene = NULL;
 }
 
 qSlicerRegistrationFiducialsTableModelPrivate
@@ -119,7 +123,14 @@ void qSlicerRegistrationFiducialsTableModel
     {
     qvtkReconnect(d->HierarchyNode, node,
                   vtkMRMLHierarchyNode::ChildNodeAddedEvent,
-                  this, SLOT(onMRMLChildNodeAdded()));
+                  this, SLOT(onMRMLChildNodeAdded(vtkObject*)));
+    qvtkReconnect(d->HierarchyNode, node,
+                  vtkMRMLHierarchyNode::ChildNodeRemovedEvent,
+                  this, SLOT(onMRMLChildNodeRemoved(vtkObject*)));
+    // NOTE (10/13/2012): ChildNodeRemovedEvent works when a child node is moved
+    // to another annotation hierarchy, but doesn't work when a child
+    // node is removed. For this reason,in addition to ChildNodeRemovedEvent,
+    // onMRMLNodeRemovedEvent() is connected to NodeRemovedEvent invoked by the scene.
 
     // Disconnect slots from old child nodes
     if (d->HierarchyNode)
@@ -134,8 +145,6 @@ void qSlicerRegistrationFiducialsTableModel
         fnode = vtkMRMLAnnotationFiducialNode::SafeDownCast(collection->GetNextItemAsObject());
         if (fnode)
           {
-          qvtkDisconnect(fnode, vtkMRMLAnnotationFiducialNode::HierarchyModifiedEvent,
-                         this, SLOT(onMRMLChildNodeHierarchyModified(vtkObject*)));
           qvtkDisconnect(fnode, vtkMRMLAnnotationFiducialNode::ValueModifiedEvent,
                          this, SLOT(onMRMLChildNodeValueModified(vtkObject*)));
           fnode->SetAttribute("RFTEvent", NULL);
@@ -154,11 +163,8 @@ void qSlicerRegistrationFiducialsTableModel
       fnode = vtkMRMLAnnotationFiducialNode::SafeDownCast(collection->GetNextItemAsObject());
       if (fnode)
         {
-        // Connect the fiducial node to onMRMLChildNodeHierarchyModified() and
-        // onMRMLChildNodeValueModified().
+        // Connect the fiducial node to onMRMLChildNodeValueModified().
         // An attribute "RFTEvent" is set "Yes" to mark that the fiducial node is connected. 
-        qvtkConnect(fnode, vtkMRMLAnnotationFiducialNode::HierarchyModifiedEvent,
-                    this, SLOT(onMRMLChildNodeHierarchyModified(vtkObject*)));
         qvtkConnect(fnode, vtkMRMLAnnotationFiducialNode::ValueModifiedEvent,
                     this, SLOT(onMRMLChildNodeValueModified(vtkObject*)));
         fnode->SetAttribute("RFTEvent", "Yes");
@@ -276,6 +282,19 @@ void qSlicerRegistrationFiducialsTableModel
 
 }
 
+//-----------------------------------------------------------------------------
+void qSlicerRegistrationFiducialsTableModel
+::setMRMLScene(vtkMRMLScene *newScene)
+{
+  Q_D(qSlicerRegistrationFiducialsTableModel);
+
+  qvtkReconnect(d->Scene, newScene,
+                vtkMRMLScene::NodeRemovedEvent,
+                this, SLOT(onMRMLNodeRemovedEvent(vtkObject*,vtkObject*)));
+  d->Scene = newScene;
+}
+
+
 
 void qSlicerRegistrationFiducialsTableModel
 ::onItemChanged(QStandardItem * item)
@@ -353,7 +372,7 @@ void qSlicerRegistrationFiducialsTableModel
 
 
 void qSlicerRegistrationFiducialsTableModel
-::onMRMLChildNodeAdded()
+::onMRMLChildNodeAdded(vtkObject* o)
 {
   Q_D(qSlicerRegistrationFiducialsTableModel);
 
@@ -372,8 +391,6 @@ void qSlicerRegistrationFiducialsTableModel
       {
       if (!fnode->GetAttribute("RFTEvent"))
         {
-        qvtkConnect(fnode, vtkMRMLAnnotationFiducialNode::HierarchyModifiedEvent,
-                    this, SLOT(onMRMLChildNodeHierarchyModified(vtkObject*)));
         qvtkConnect(fnode, vtkMRMLAnnotationFiducialNode::ValueModifiedEvent,
                     this, SLOT(onMRMLChildNodeValueModified(vtkObject*)));
         fnode->SetAttribute("RFTEvent", "Yes");
@@ -383,49 +400,34 @@ void qSlicerRegistrationFiducialsTableModel
   this->updateTable();
 }
 
-
 void qSlicerRegistrationFiducialsTableModel
-::onMRMLChildNodeHierarchyModified(vtkObject* obj)
+::onMRMLChildNodeRemoved(vtkObject* o)
 {
-  Q_D(qSlicerRegistrationFiducialsTableModel);
-
-  vtkMRMLAnnotationFiducialNode* fnode;
-  fnode = vtkMRMLAnnotationFiducialNode::SafeDownCast(obj);
-
-  // If the signal is from fiducla node, check if it is still
-  // under d->HierarchyNode. If not, disconnect from the slots.
-  if (fnode && d->HierarchyNode)
+  vtkMRMLNode* n = vtkMRMLNode::SafeDownCast(o);
+  vtkMRMLAnnotationFiducialNode* fnode = vtkMRMLAnnotationFiducialNode::SafeDownCast(n);
+  if (fnode && fnode->GetAttribute("RFTEvent"))
     {
-    bool found = false;
-    // TODO: Is there any method to obtain parent hierarchy node?
-    //       Otherwise, we have to search from the hierarchy node
-    vtkNew<vtkCollection> collection;
-    d->HierarchyNode->GetDirectChildren(collection.GetPointer());
-    int nItems = collection->GetNumberOfItems();
-    collection->InitTraversal();
-    for (int i = 0; i < nItems; i ++)
+    if (strcmp("Yes", fnode->GetAttribute("RFTEvent")) == 0)
       {
-      vtkMRMLAnnotationFiducialNode* p;
-      p = vtkMRMLAnnotationFiducialNode::SafeDownCast(collection->GetNextItemAsObject());
-      if (p && strcmp(p->GetID(), fnode->GetID()) == 0)
-        {
-        found = true;
-        }
-      }
-    if (!found)
-      {
-      // The node is not a chlid of d->HierarchyNode anymore. Disconnect from
-      // the slots.
-      qvtkDisconnect(fnode, vtkMRMLAnnotationFiducialNode::HierarchyModifiedEvent,
-                     this, SLOT(onMRMLChildNodeHierarchyModified(vtkObject*)));
       qvtkDisconnect(fnode, vtkMRMLAnnotationFiducialNode::ValueModifiedEvent,
                      this, SLOT(onMRMLChildNodeValueModified(vtkObject*)));
       fnode->SetAttribute("RFTEvent", NULL);
+      this->updateTable();
       }
-    this->updateTable();
     }
 }
 
+void qSlicerRegistrationFiducialsTableModel
+::onMRMLNodeRemovedEvent(vtkObject* caller, vtkObject* callData)
+{
+  Q_D(qSlicerRegistrationFiducialsTableModel);
+
+  vtkMRMLScene* scene = vtkMRMLScene::SafeDownCast(caller);
+  if (scene && d->Scene && scene == d->Scene)
+    {
+    onMRMLChildNodeRemoved(callData);
+    }
+}
 
 void qSlicerRegistrationFiducialsTableModel
 ::onMRMLChildNodeValueModified(vtkObject* obj)

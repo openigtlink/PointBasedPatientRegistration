@@ -26,7 +26,7 @@
 #include <QTableWidgetSelectionRange>
 
 #include "qSlicerRegistrationFiducialsTableModel.h"
-
+#include "vtkMRMLAnnotationHierarchyNode.h"
 
 //-----------------------------------------------------------------------------
 /// \ingroup Slicer_QtModules_PointBasedPatientRegistration
@@ -82,13 +82,26 @@ qSlicerRegistrationFiducialsPanelWidget
   d->PhysicalPointsTable->setModel(d->PhysicalPointsTableModel);
   if (d->ImagePointsAnnotationNodeSelector)
     {
+    d->ImagePointsTableModel->setMRMLScene(d->ImagePointsAnnotationNodeSelector->mrmlScene());
     connect(d->ImagePointsAnnotationNodeSelector, SIGNAL(currentNodeChanged(vtkMRMLNode*)),
             d->ImagePointsTableModel, SLOT(setNode(vtkMRMLNode*)));
     }
   if (d->PhysicalPointsAnnotationNodeSelector)
     {
+    d->PhysicalPointsTableModel->setMRMLScene(d->PhysicalPointsAnnotationNodeSelector->mrmlScene());
     connect(d->PhysicalPointsAnnotationNodeSelector, SIGNAL(currentNodeChanged(vtkMRMLNode*)),
             d->PhysicalPointsTableModel, SLOT(setNode(vtkMRMLNode*)));
+    }
+
+  if (d->ClearImagePointsButton)
+    {
+    connect(d->ClearImagePointsButton, SIGNAL(clicked()),
+            this, SLOT(clearImagePoints()));
+    }
+  if (d->ClearPhysicalPointsButton)
+    {
+    connect(d->ClearPhysicalPointsButton, SIGNAL(clicked()),
+            this, SLOT(clearPhysicalPoints()));
     }
 
 }
@@ -117,5 +130,50 @@ void qSlicerRegistrationFiducialsPanelWidget
   if (d->PhysicalPointsAnnotationNodeSelector)
     {
     d->PhysicalPointsAnnotationNodeSelector->setMRMLScene(newScene);
+    }
+  if (d->ImagePointsTableModel)
+    {
+    d->ImagePointsTableModel->setMRMLScene(newScene);
+    }
+  if (d->PhysicalPointsTableModel)
+    {
+    d->PhysicalPointsTableModel->setMRMLScene(newScene);
+    }
+
+}
+
+
+//-----------------------------------------------------------------------------
+void qSlicerRegistrationFiducialsPanelWidget
+::clearImagePoints()
+{
+  Q_D(qSlicerRegistrationFiducialsPanelWidget);
+  if (d->ImagePointsAnnotationNodeSelector)
+    {
+    vtkMRMLAnnotationHierarchyNode* hnode;
+    hnode = vtkMRMLAnnotationHierarchyNode::SafeDownCast(d->ImagePointsAnnotationNodeSelector->currentNode());
+    if (hnode)
+      {
+      hnode->RemoveChildrenNodes();
+      hnode->InvokeEvent(vtkMRMLAnnotationHierarchyNode::HierarchyModifiedEvent);
+      }
+    }
+}
+
+
+//-----------------------------------------------------------------------------
+void qSlicerRegistrationFiducialsPanelWidget
+::clearPhysicalPoints()
+{
+  Q_D(qSlicerRegistrationFiducialsPanelWidget);
+  if (d->PhysicalPointsAnnotationNodeSelector)
+    {
+    vtkMRMLAnnotationHierarchyNode* hnode;
+    hnode = vtkMRMLAnnotationHierarchyNode::SafeDownCast(d->PhysicalPointsAnnotationNodeSelector->currentNode());
+    if (hnode)
+      {
+      hnode->RemoveChildrenNodes();
+      hnode->InvokeEvent(vtkMRMLAnnotationHierarchyNode::HierarchyModifiedEvent);
+      }
     }
 }

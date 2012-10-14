@@ -31,6 +31,7 @@
 
 class vtkObject;
 class vtkMRMLNode;
+class vtkMRMLScene;
 class qSlicerRegistrationFiducialsTableModelPrivate;
 
 class Q_SLICER_MODULE_POINTBASEDPATIENTREGISTRATION_WIDGETS_EXPORT qSlicerRegistrationFiducialsTableModel
@@ -62,13 +63,16 @@ public:
   void setCoordinateLabel(int m); // LABEL_RAS or LABEL_XYZ
   void updateTable();
 
+public slots:
+  void setMRMLScene(vtkMRMLScene *newScene);
+
 protected slots:
   void setNode(vtkMRMLNode* node);
   void onItemChanged(QStandardItem * item);
-  void onMRMLChildNodeAdded();
-  void onMRMLChildNodeHierarchyModified(vtkObject*);
+  void onMRMLChildNodeAdded(vtkObject*);
+  void onMRMLChildNodeRemoved(vtkObject*);
   void onMRMLChildNodeValueModified(vtkObject*);
-
+  void onMRMLNodeRemovedEvent(vtkObject*,vtkObject*);
   
 protected:
   QScopedPointer<qSlicerRegistrationFiducialsTableModelPrivate> d_ptr;
