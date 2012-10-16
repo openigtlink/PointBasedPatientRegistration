@@ -290,23 +290,25 @@ void qSlicerRegistrationFiducialsTableModel
 {
   Q_D(qSlicerRegistrationFiducialsTableModel);
 
-//  if (d->Scene && d->HierarchyNode)
-//    {
-//    // Generate fiducial point name
-//    vtkNew<vtkCollection> collection;
-//    d->HierarchyNode->GetDirectChildren(collection.GetPointer());
-//    int nItems = collection->GetNumberOfItems();
-//
-//    std::stringstream ss;
-//    ss << "Physical_" << (nItems+1);
-//
-//    vtkSmartPointer< vtkMRMLAnnotationFiducialNode > fid = vtkSmartPointer< vtkMRMLAnnotationFiducialNode >::New();
-//    fid->SetName(ss.str().c_str());
-//    fid->SetFiducialCoordinates(x, y, z) 
-//    d->Scene->AddNode(fid);
-//    fid->SetParentNodeID(d->HierarchyNode->GetID());
-//    this->updateTable();
-//    }
+  if (d->Scene && d->HierarchyNode)
+    {
+    // Generate fiducial point name
+    vtkNew<vtkCollection> collection;
+    d->HierarchyNode->GetDirectChildren(collection.GetPointer());
+    int nItems = collection->GetNumberOfItems();
+
+    std::stringstream ss;
+    ss << "Physical_" << (nItems+1);
+
+    vtkSmartPointer< vtkMRMLAnnotationFiducialNode > fid = vtkSmartPointer< vtkMRMLAnnotationFiducialNode >::New();
+    fid->SetName(ss.str().c_str());
+    double coord[3] = {x, y, z};
+    fid->AddControlPoint(coord, 0, 1);
+    //fid->SetFiducialCoordinates(x, y, z);
+    d->Scene->AddNode(fid);
+    //fid->SetParentNodeID(d->HierarchyNode->GetID());
+    this->updateTable();
+    }
 }
 
 
