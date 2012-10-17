@@ -26,6 +26,7 @@
 #include "vtkMRMLScene.h"
 
 #include "vtkNew.h"
+#include "vtkSmartPointer.h"
 #include "vtkCollection.h"
 
 #include <map>
@@ -44,10 +45,10 @@ class Q_SLICER_MODULE_POINTBASEDPATIENTREGISTRATION_WIDGETS_EXPORT qSlicerRegist
 
   void init();
   vtkMRMLAnnotationHierarchyNode* HierarchyNode;
-
   int PendingItemModified; // -1 means not updating
-
   vtkMRMLScene* Scene;
+  int Counter;
+  
 };
 
 qSlicerRegistrationFiducialsTableModelPrivate
@@ -58,6 +59,7 @@ qSlicerRegistrationFiducialsTableModelPrivate
   this->HierarchyNode = NULL;
   this->PendingItemModified = -1; // -1 means not updating
   this->Scene = NULL;
+  this->Counter = 0;
 }
 
 qSlicerRegistrationFiducialsTableModelPrivate
@@ -303,11 +305,14 @@ void qSlicerRegistrationFiducialsTableModel
     vtkSmartPointer< vtkMRMLAnnotationFiducialNode > fid = vtkSmartPointer< vtkMRMLAnnotationFiducialNode >::New();
     fid->SetName(ss.str().c_str());
     double coord[3] = {x, y, z};
-    fid->AddControlPoint(coord, 0, 1);
-    //fid->SetFiducialCoordinates(x, y, z);
+    fid->SetFiducialCoordinates(x, y, z);
+    fid->CreateAnnotationTextDisplayNode();
+    fid->CreateAnnotationPointDisplayNode();
+    //fid->GetAnnotationPointDisplayNode()->SetGlyphScale(300);
     d->Scene->AddNode(fid);
     //fid->SetParentNodeID(d->HierarchyNode->GetID());
     this->updateTable();
+
     }
 }
 

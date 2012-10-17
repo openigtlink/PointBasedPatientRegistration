@@ -28,6 +28,7 @@
 #include "qSlicerRegistrationFiducialsTableModel.h"
 
 #include "vtkObject.h"
+#include "vtkSmartPointer.h"
 #include "vtkMatrix4x4.h"
 #include "vtkMRMLAnnotationHierarchyNode.h"
 #include "vtkMRMLLinearTransformNode.h"
@@ -237,8 +238,8 @@ void qSlicerRegistrationFiducialsPanelWidget
   Q_D(qSlicerRegistrationFiducialsPanelWidget);
   if (d->TrackerTransform && d->PhysicalPointsTableModel)
     {
-    vtkMatrix4x4* matrix = d->TrackerTransform->GetMatrixTransformToParent();
-    QString buf;
+    vtkSmartPointer< vtkMatrix4x4 > matrix = vtkSmartPointer< vtkMatrix4x4 >::New();
+    d->TrackerTransform->GetMatrixTransformToWorld(matrix);
     d->PhysicalPointsTableModel->addPoint(matrix->Element[0][3], matrix->Element[1][3], matrix->Element[2][3]);
     }
 }
