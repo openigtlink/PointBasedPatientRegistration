@@ -26,12 +26,17 @@
 #include <QTableWidgetSelectionRange>
 
 #include "qSlicerRegistrationFiducialsTableModel.h"
+#include "qSlicerAbstractCoreModule.h"
+#include "qSlicerCoreApplication.h"
+#include "qSlicerModuleManager.h"
 
 #include "vtkObject.h"
 #include "vtkSmartPointer.h"
 #include "vtkMatrix4x4.h"
 #include "vtkMRMLAnnotationHierarchyNode.h"
 #include "vtkMRMLLinearTransformNode.h"
+
+#include "vtkSlicerAnnotationModuleLogic.h"
 
 //-----------------------------------------------------------------------------
 /// \ingroup Slicer_QtModules_PointBasedPatientRegistration
@@ -50,7 +55,7 @@ public:
   qSlicerRegistrationFiducialsTableModel* ImagePointsTableModel;
   qSlicerRegistrationFiducialsTableModel* PhysicalPointsTableModel;
   vtkMRMLLinearTransformNode* TrackerTransform;
-
+  vtkSlicerAnnotationModuleLogic* AnnotationsLogic;
 };
 
 // --------------------------------------------------------------------------
@@ -59,6 +64,10 @@ qSlicerRegistrationFiducialsPanelWidgetPrivate
   qSlicerRegistrationFiducialsPanelWidget& object)
   : q_ptr(&object)
 {
+  this->ImagePointsTableModel = NULL;
+  this->PhysicalPointsTableModel = NULL;
+  this->TrackerTransform = NULL;
+  this->AnnotationsLogic = NULL;
 }
 
 // --------------------------------------------------------------------------
@@ -121,6 +130,14 @@ qSlicerRegistrationFiducialsPanelWidget
             this, SLOT(setTrackerTransform(vtkMRMLNode*)));
     }
 
+  qSlicerAbstractCoreModule* annotationsModule =
+    qSlicerCoreApplication::application()->moduleManager()->module("Annotations");
+
+  if (annotationsModule)
+    {
+    d->AnnotationsLogic = 
+      vtkSlicerAnnotationModuleLogic::SafeDownCast(annotationsModule->logic());
+    }
 }
 
 
@@ -236,12 +253,56 @@ void qSlicerRegistrationFiducialsPanelWidget
 ::addPhysicalPoint()
 {
   Q_D(qSlicerRegistrationFiducialsPanelWidget);
-  if (d->TrackerTransform && d->PhysicalPointsTableModel)
+  if (d->TrackerTransform && d->PhysicalPointsTableModel && d->AnnotationsLogic)
     {
-    vtkSmartPointer< vtkMatrix4x4 > matrix = vtkSmartPointer< vtkMatrix4x4 >::New();
-    d->TrackerTransform->GetMatrixTransformToWorld(matrix);
-    d->PhysicalPointsTableModel->addPoint(matrix->Element[0][3], matrix->Element[1][3], matrix->Element[2][3]);
+    // Check the current active AnnotationHierarchy node.
+    // If it is different from the one specified in "Fiducials" menu, 
+    // we switch the active node before adding a fiducial node. Once the node
+    // is added, we switch back to the original active node.
+
+    //vtkMRMLAnnotationHierarchyNode* original = d->AnnotationsLogic->GetActiveHierarchyNodeID();
+    //vtkMRMLAnnotationHierarchyNode* current  = NULL;
+    std::string original = d->AnnotationsLogic->GetActiveHierarchyNodeID();;
+    std::string current = "";
+
+    if (original.compare("") != 0)
+      {
+      current = original;
+      vtkMRMLAnnotationHierarchyNode* hnode;
+      hnode = vtkMRMLAnnotationHierarchyNode::SafeDownCast
+        (d->PhysicalPointsAnnotationNodeSelector->currentNode());
+      if (hnode && original.compare(hnode->GetID()) != 0)
+        {
+        current = hnode->GetID();
+        }
+      }
+    else
+      {
+      vtkMRMLAnnotationHierarchyNode* hnode;
+      hnode = vtkMRMLAnnotationHierarchyNode::SafeDownCast
+        (d->PhysicalPointsAnnotationNodeSelector->currentNode());
+      if (hnode)
+        {
+        current = hnode->GetID();
+        }
+      }
+    if (current.compare("") != 0)
+      {
+      // Switch the active hierarchy node
+      d->AnnotationsLogic->SetActiveHierarchyNodeID(current.c_str());
+
+      // Add a new fiducial node to the active hierarchy
+      vtkSmartPointer< vtkMatrix4x4 > matrix = vtkSmartPointer< vtkMatrix4x4 >::New();
+      d->TrackerTransform->GetMatrixTransformToWorld(matrix);
+      d->PhysicalPointsTableModel->addPoint(matrix->Element[0][3],
+                                            matrix->Element[1][3],
+                                            matrix->Element[2][3]);
+
+      // Switch the active hierarchy node to the original
+      d->AnnotationsLogic->SetActiveHierarchyNodeID(original.c_str());
+      }
     }
 }
+
 
 
