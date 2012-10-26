@@ -22,6 +22,7 @@
 #include "qSlicerRegistrationFiducialsPanelWidget.h"
 #include "ui_qSlicerRegistrationFiducialsPanelWidget.h"
 
+#include <QDebug>
 #include <QList>
 #include <QTableWidgetSelectionRange>
 
@@ -35,6 +36,8 @@
 #include "vtkMatrix4x4.h"
 #include "vtkMRMLAnnotationHierarchyNode.h"
 #include "vtkMRMLLinearTransformNode.h"
+#include "vtkMRMLInteractionNode.h"
+#include "vtkMRMLSelectionNode.h"
 
 #include "vtkSlicerAnnotationModuleLogic.h"
 
@@ -52,10 +55,17 @@ public:
     qSlicerRegistrationFiducialsPanelWidget& object);
   virtual void setupUi(qSlicerRegistrationFiducialsPanelWidget*);
 
+  // Tables in "Image Points" and "Physical Points" tabs
   qSlicerRegistrationFiducialsTableModel* ImagePointsTableModel;
   qSlicerRegistrationFiducialsTableModel* PhysicalPointsTableModel;
+
+  // Linear transform node to import tacking data
   vtkMRMLLinearTransformNode* TrackerTransform;
+
+  // Pointer to Logic class of Annotations module to switch ActiveHierarchy node.
   vtkSlicerAnnotationModuleLogic* AnnotationsLogic;
+
+  QString OriginalAnnotationID;
 };
 
 // --------------------------------------------------------------------------
@@ -68,6 +78,7 @@ qSlicerRegistrationFiducialsPanelWidgetPrivate
   this->PhysicalPointsTableModel = NULL;
   this->TrackerTransform = NULL;
   this->AnnotationsLogic = NULL;
+  this->OriginalAnnotationID = "";
 }
 
 // --------------------------------------------------------------------------
@@ -91,6 +102,7 @@ qSlicerRegistrationFiducialsPanelWidget
 
   d->ImagePointsTableModel    = new qSlicerRegistrationFiducialsTableModel(this);
   d->PhysicalPointsTableModel = new qSlicerRegistrationFiducialsTableModel(this);
+
   d->ImagePointsTableModel->setCoordinateLabel(qSlicerRegistrationFiducialsTableModel::LABEL_RAS);
   d->PhysicalPointsTableModel->setCoordinateLabel(qSlicerRegistrationFiducialsTableModel::LABEL_XYZ);
 
@@ -305,4 +317,83 @@ void qSlicerRegistrationFiducialsPanelWidget
 }
 
 
+//-----------------------------------------------------------------------------
+void qSlicerRegistrationFiducialsPanelWidget
+::switchPlaceMode()
+{
+  // The following code is based on 
+  // void Slicer/Base/QTGUI/qSlicerMouseModeToolBar.cxx (switchPlaceMode())
+  Q_D(qSlicerRegistrationFiducialsPanelWidget);
 
+  vtkSlicerApplicationLogic* appLogic = qSlicerCoreApplication::application()->applicationLogic();
+
+  if (!appLogic)
+    {
+    qWarning() << "Mouse Mode Tool Bar not set up with application logic";
+    return;
+    }
+
+  vtkMRMLInteractionNode * interactionNode = appLogic->GetInteractionNode();
+  if (!interactionNode)
+    {
+    qCritical() << "qSlicerMouseModeToolBar::switchPlaceMode: Cannot get interaction node.";
+    }
+
+  vtkMRMLSelectionNode *selectionNode = appLogic->GetSelectionNode();
+  if (!selectionNode )
+    {
+    qCritical() << "qSlicerMouseModeToolBar::switchPlaceMode: cannot get selection node.";
+    return;
+    }
+
+  if (d->ImagePointsAnnotationNodeSelector)
+    {
+    return;
+    }
+  // If it is already in Place mode, quit and switch the active node to the original
+  if (interactionNode->GetCurrentInteractionMode() == vtkMRMLInteractionNode::Place &&
+      d->OriginalAnnotationID.compare("") != 0)
+    {
+    interactionNode->InvokeEvent(vtkMRMLInteractionNode::EndPlacementEvent);
+    selectionNode->SetReferenceActiveAnnotationID(d->OriginalAnnotationID.toLatin1());
+    d->OriginalAnnotationID = "";
+    }
+  else
+    {
+    d->OriginalAnnotationID = QString(selectionNode->GetActiveAnnotationID());
+    QString currentID = "";
+    vtkMRMLAnnotationHierarchyNode* hnode;
+    hnode = vtkMRMLAnnotationHierarchyNode::SafeDownCast
+      (d->ImagePointsAnnotationNodeSelector->currentNode());
+    
+    if (d->OriginalAnnotationID.compare("") != 0)
+      {
+      if (hnode)
+        {
+        QString hnodeID = hnode->GetID();
+        if (d->OriginalAnnotationID.compare("") == 0)
+          {
+          currentID = hnode->GetID();
+          }
+        }
+      }
+    else
+      {
+      if (hnode)
+        {
+        currentID = hnode->GetID();
+        }
+      }
+    if (currentID.compare("") != 0)
+      {
+      selectionNode->SetReferenceActiveAnnotationID(currentID.toLatin1());
+      interactionNode->SwitchToPersistentPlaceMode();
+      selectionNode->SetReferenceActiveAnnotationID(d->OriginalAnnotationID.toLatin1());
+      //interactionNode->SwitchToSinglePlaceMode();
+      }
+    else
+      {
+      d->OriginalAnnotationID = "";
+      }
+    }
+}
