@@ -57,7 +57,6 @@ protected slots:
   void clearImagePoints();
   void clearPhysicalPoints();
   void addPhysicalPoint();
-  //void switchPlaceMode();
 
 protected:
   QScopedPointer<qSlicerRegistrationFiducialsPanelWidgetPrivate> d_ptr;
