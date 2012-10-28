@@ -32,6 +32,7 @@ set(${KIT}_RESOURCES
 
 set(${KIT}_TARGET_LIBRARIES
   vtkSlicerAnnotationsModuleMRML
+  vtkSlicerAnnotationsModuleLogic
   vtkSlicer${MODULE_NAME}ModuleLogic
   )
 

@@ -35,7 +35,7 @@
       </sizepolicy>
      </property>
      <property name="currentIndex">
-      <number>1</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="ImagePointsTab">
       <attribute name="title">
@@ -85,6 +85,15 @@
              <string>vtkMRMLAnnotationHierarchyNode</string>
             </stringlist>
            </property>
+           <property name="addEnabled">
+            <bool>true</bool>
+           </property>
+           <property name="removeEnabled">
+            <bool>true</bool>
+           </property>
+           <property name="renameEnabled">
+            <bool>true</bool>
+           </property>
            <property name="sizeAdjustPolicy">
             <enum>QComboBox::AdjustToMinimumContentsLength</enum>
            </property>
@@ -101,17 +110,11 @@
           <number>1</number>
          </property>
          <item>
-          <widget class="QPushButton" name="AddImagePointButton">
-           <property name="text">
-            <string>+</string>
+          <widget class="qSlicerMouseModeToolBar" name="MouseModeToolBar">
+           <property name="floatable">
+            <bool>false</bool>
            </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QPushButton" name="RemoveImagePointButton">
-           <property name="text">
-            <string>-</string>
-           </property>
+           <addaction name="separator"/>
           </widget>
          </item>
          <item>
@@ -457,6 +460,11 @@
    <class>qMRMLNodeComboBox</class>
    <extends>QWidget</extends>
    <header>qMRMLNodeComboBox.h</header>
+  </customwidget>
+  <customwidget>
+   <class>qSlicerMouseModeToolBar</class>
+   <extends>QToolBar</extends>
+   <header>qSlicerMouseModeToolBar.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

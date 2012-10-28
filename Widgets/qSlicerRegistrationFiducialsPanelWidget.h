@@ -48,12 +48,16 @@ public slots:
   virtual void setMRMLScene(vtkMRMLScene *newScene);
   void setTrackerTransform(vtkMRMLNode*);
   void onTrackerTransformModified();
+  void setImagePointsAnnotationNode(vtkMRMLNode*);
+  void setPhysicalPointsAnnotationNode(vtkMRMLNode*);
+  void onTabSwitched(int);
+  void enter();
 
 protected slots:
   void clearImagePoints();
   void clearPhysicalPoints();
   void addPhysicalPoint();
-  void switchPlaceMode();
+  //void switchPlaceMode();
 
 protected:
   QScopedPointer<qSlicerRegistrationFiducialsPanelWidgetPrivate> d_ptr;

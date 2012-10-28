@@ -30,6 +30,7 @@
 #include "qSlicerAbstractCoreModule.h"
 #include "qSlicerCoreApplication.h"
 #include "qSlicerModuleManager.h"
+#include "qSlicerApplication.h"
 
 #include "vtkObject.h"
 #include "vtkSmartPointer.h"
@@ -54,6 +55,7 @@ public:
   qSlicerRegistrationFiducialsPanelWidgetPrivate(
     qSlicerRegistrationFiducialsPanelWidget& object);
   virtual void setupUi(qSlicerRegistrationFiducialsPanelWidget*);
+  vtkMRMLAnnotationHierarchyNode* createNewHierarchyNode(const char* basename);
 
   // Tables in "Image Points" and "Physical Points" tabs
   qSlicerRegistrationFiducialsTableModel* ImagePointsTableModel;
@@ -89,6 +91,30 @@ void qSlicerRegistrationFiducialsPanelWidgetPrivate
 }
 
 //-----------------------------------------------------------------------------
+vtkMRMLAnnotationHierarchyNode* qSlicerRegistrationFiducialsPanelWidgetPrivate
+::createNewHierarchyNode(const char* basename)
+{
+  // NOTE: this method has to be called after setting AnnotationLogic;
+  if (this->AnnotationsLogic)
+    {
+    vtkMRMLScene * scene = qSlicerCoreApplication::application()->mrmlScene();
+    QString parentNodeID = this->AnnotationsLogic->GetTopLevelHierarchyNodeID();
+    vtkMRMLAnnotationHierarchyNode* newnode
+      = vtkMRMLAnnotationHierarchyNode::New();
+    scene->AddNode(newnode);
+    newnode->HideFromEditorsOff();
+    newnode->SetName(scene->GetUniqueNameByString(basename));
+    newnode->SetParentNodeID(parentNodeID.toLatin1());
+    this->AnnotationsLogic->AddDisplayNodeForHierarchyNode(newnode);
+    return newnode;
+    }
+  else
+    {
+    return NULL;
+    }
+}  
+
+//-----------------------------------------------------------------------------
 // qSlicerRegistrationFiducialsPanelWidget methods
 
 //-----------------------------------------------------------------------------
@@ -100,6 +126,15 @@ qSlicerRegistrationFiducialsPanelWidget
   Q_D(qSlicerRegistrationFiducialsPanelWidget);
   d->setupUi(this);
 
+  qSlicerAbstractCoreModule* annotationsModule =
+    qSlicerCoreApplication::application()->moduleManager()->module("Annotations");
+  if (annotationsModule)
+    {
+    d->AnnotationsLogic = 
+      vtkSlicerAnnotationModuleLogic::SafeDownCast(annotationsModule->logic());
+    }
+  vtkMRMLScene * scene = qSlicerCoreApplication::application()->mrmlScene();
+
   d->ImagePointsTableModel    = new qSlicerRegistrationFiducialsTableModel(this);
   d->PhysicalPointsTableModel = new qSlicerRegistrationFiducialsTableModel(this);
 
@@ -108,19 +143,46 @@ qSlicerRegistrationFiducialsPanelWidget
 
   d->ImagePointsTable->setModel(d->ImagePointsTableModel);
   d->PhysicalPointsTable->setModel(d->PhysicalPointsTableModel);
+
   if (d->ImagePointsAnnotationNodeSelector)
     {
     d->ImagePointsTableModel->setMRMLScene(d->ImagePointsAnnotationNodeSelector->mrmlScene());
     connect(d->ImagePointsAnnotationNodeSelector, SIGNAL(currentNodeChanged(vtkMRMLNode*)),
             d->ImagePointsTableModel, SLOT(setNode(vtkMRMLNode*)));
+    connect(d->ImagePointsAnnotationNodeSelector, SIGNAL(currentNodeChanged(vtkMRMLNode*)),
+            this, SLOT(setImagePointsAnnotationNode(vtkMRMLNode*)));
+    if (scene)
+      {
+      d->ImagePointsAnnotationNodeSelector->setMRMLScene(scene);
+      // Create a new hierarchy node
+      vtkMRMLAnnotationHierarchyNode* node = d->createNewHierarchyNode("ImagePoint");
+      if (node)
+        {
+        d->ImagePointsAnnotationNodeSelector->setCurrentNode(node);
+        node->Delete();
+        }
+      }
     }
   if (d->PhysicalPointsAnnotationNodeSelector)
     {
     d->PhysicalPointsTableModel->setMRMLScene(d->PhysicalPointsAnnotationNodeSelector->mrmlScene());
     connect(d->PhysicalPointsAnnotationNodeSelector, SIGNAL(currentNodeChanged(vtkMRMLNode*)),
             d->PhysicalPointsTableModel, SLOT(setNode(vtkMRMLNode*)));
-    }
+    connect(d->ImagePointsAnnotationNodeSelector, SIGNAL(currentNodeChanged(vtkMRMLNode*)),
+            this, SLOT(setPhysicalPointsAnnotationNode(vtkMRMLNode*)));
 
+    if (scene)
+      {
+      d->PhysicalPointsAnnotationNodeSelector->setMRMLScene(scene);
+      // Create a new hierarchy node
+      vtkMRMLAnnotationHierarchyNode* node = d->createNewHierarchyNode("PhysicalPoint");
+      if (node)
+        {
+        d->PhysicalPointsAnnotationNodeSelector->setCurrentNode(node);
+        node->Delete();
+        }
+      }
+    }
   if (d->ClearImagePointsButton)
     {
     connect(d->ClearImagePointsButton, SIGNAL(clicked()),
@@ -141,14 +203,26 @@ qSlicerRegistrationFiducialsPanelWidget
     connect(d->TrackerTransformNodeSelector, SIGNAL(currentNodeChanged(vtkMRMLNode*)),
             this, SLOT(setTrackerTransform(vtkMRMLNode*)));
     }
+  //if (d->AddImagePointButton)
+  //  {
+  //  connect(d->AddImagePointButton, SIGNAL(clicked()),
+  //          this, SLOT(switchPlaceMode()));
+  //  }
 
-  qSlicerAbstractCoreModule* annotationsModule =
-    qSlicerCoreApplication::application()->moduleManager()->module("Annotations");
-
-  if (annotationsModule)
+  if (d->MouseModeToolBar)
     {
-    d->AnnotationsLogic = 
-      vtkSlicerAnnotationModuleLogic::SafeDownCast(annotationsModule->logic());
+    d->MouseModeToolBar->setApplicationLogic(
+                                             qSlicerApplication::application()->applicationLogic());
+    d->MouseModeToolBar->setMRMLScene(qSlicerApplication::application()->mrmlScene());
+    QObject::connect(qSlicerApplication::application(),
+                     SIGNAL(mrmlSceneChanged(vtkMRMLScene*)),
+                     d->MouseModeToolBar,
+                     SLOT(setMRMLScene(vtkMRMLScene*)));
+    }
+  if (d->PointsTabWidget)
+    {
+    QObject::connect(d->PointsTabWidget,SIGNAL(currentChanged(int)),
+                     this,SLOT(onTabSwitched(int)));
     }
 }
 
@@ -222,6 +296,80 @@ void qSlicerRegistrationFiducialsPanelWidget
   d->PositionZEdit->setText(buf.setNum(matrix->Element[2][3]));
 }
 
+//-----------------------------------------------------------------------------
+void qSlicerRegistrationFiducialsPanelWidget
+::setImagePointsAnnotationNode(vtkMRMLNode* node)
+{
+  Q_D(qSlicerRegistrationFiducialsPanelWidget);
+
+  vtkMRMLAnnotationHierarchyNode* hnode;
+  hnode = vtkMRMLAnnotationHierarchyNode::SafeDownCast(node);
+  if (hnode)
+    {
+    d->AnnotationsLogic->SetActiveHierarchyNodeID(hnode->GetID());
+    }
+}
+
+
+//-----------------------------------------------------------------------------
+void qSlicerRegistrationFiducialsPanelWidget
+::setPhysicalPointsAnnotationNode(vtkMRMLNode* node)
+{
+  Q_D(qSlicerRegistrationFiducialsPanelWidget);
+
+  vtkMRMLAnnotationHierarchyNode* hnode;
+  hnode = vtkMRMLAnnotationHierarchyNode::SafeDownCast(node);
+  if (hnode)
+    {
+    d->AnnotationsLogic->SetActiveHierarchyNodeID(hnode->GetID());
+    }
+}
+
+
+//-----------------------------------------------------------------------------
+void qSlicerRegistrationFiducialsPanelWidget
+::onTabSwitched(int index)
+{
+  Q_D(qSlicerRegistrationFiducialsPanelWidget);
+
+  vtkMRMLAnnotationHierarchyNode* hnode = NULL;
+
+  switch(index)
+    {
+    case 0:
+      {
+      hnode = vtkMRMLAnnotationHierarchyNode::SafeDownCast
+        (d->ImagePointsAnnotationNodeSelector->currentNode());
+      break;
+      }
+    case 1:
+      {
+      hnode = vtkMRMLAnnotationHierarchyNode::SafeDownCast
+        (d->PhysicalPointsAnnotationNodeSelector->currentNode());
+      break;
+      }
+    default:
+      break;
+    }
+  if (hnode)
+    {
+    d->AnnotationsLogic->SetActiveHierarchyNodeID(hnode->GetID());
+    }
+}
+
+
+//-----------------------------------------------------------------------------
+void qSlicerRegistrationFiducialsPanelWidget
+::enter()
+{
+  Q_D(qSlicerRegistrationFiducialsPanelWidget);
+  
+  if (d->PointsTabWidget)
+    {
+    int i = d->PointsTabWidget->currentIndex();
+    onTabSwitched(i);
+    }
+}
 
 
 //-----------------------------------------------------------------------------
@@ -316,84 +464,103 @@ void qSlicerRegistrationFiducialsPanelWidget
     }
 }
 
+////-----------------------------------------------------------------------------
+//void qSlicerRegistrationFiducialsPanelWidget
+//::switchPlaceMode()
+//{
+//  // The following code is based on 
+//  // void Slicer/Base/QTGUI/qSlicerMouseModeToolBar.cxx (switchPlaceMode())
+//  Q_D(qSlicerRegistrationFiducialsPanelWidget);
+//
+//  if (!d->AddImagePointButton)
+//    {
+//    return;
+//    }
+//  if (!d->ImagePointsAnnotationNodeSelector)
+//    {
+//    return;
+//    }
+//  if (!d->AnnotationsLogic)
+//    {
+//    return;
+//    }
+//    
+//  vtkSlicerApplicationLogic* appLogic = qSlicerCoreApplication::application()->applicationLogic();
+//  if (!appLogic)
+//    {
+//    qWarning() << "Mouse Mode Tool Bar not set up with application logic";
+//    return;
+//    }
+//
+//  vtkMRMLInteractionNode * interactionNode = appLogic->GetInteractionNode();
+//  if (!interactionNode)
+//    {
+//    qCritical() << "qSlicerMouseModeToolBar::switchPlaceMode: Cannot get interaction node.";
+//    }
+//
+//  vtkMRMLSelectionNode *selectionNode = appLogic->GetSelectionNode();
+//  if (!selectionNode )
+//    {
+//    qCritical() << "qSlicerMouseModeToolBar::switchPlaceMode: cannot get selection node.";
+//    return;
+//    }
+//
+//  if (d->AddImagePointButton->isChecked()) // Start place mode. 
+//    {
+//    d->OriginalAnnotationID = QString(selectionNode->GetActiveAnnotationID());
+//    QString currentID = "";
+//    vtkMRMLAnnotationHierarchyNode* hnode;
+//    hnode = vtkMRMLAnnotationHierarchyNode::SafeDownCast
+//      (d->ImagePointsAnnotationNodeSelector->currentNode());
+//
+//    if (hnode)
+//      {
+//      currentID = hnode->GetID();
+//      }
+//    else
+//      {
+//      // Create a new Annotation hierarchy
+//      vtkMRMLScene* scene = d->ImagePointsAnnotationNodeSelector->mrmlScene();
+//      QString parentNodeID = d->AnnotationsLogic->GetTopLevelHierarchyNodeID();
+//      vtkMRMLAnnotationHierarchyNode* newnode
+//        = vtkMRMLAnnotationHierarchyNode::New();
+//      scene->AddNode(newnode);
+//      newnode->HideFromEditorsOff();
+//      newnode->SetName(scene->GetUniqueNameByString("ImagePoints"));
+//      newnode->SetParentNodeID(parentNodeID.toLatin1());
+//      d->AnnotationsLogic->AddDisplayNodeForHierarchyNode(newnode);
+//      currentID = newnode->GetID();
+//      d->ImagePointsAnnotationNodeSelector->setCurrentNode(newnode);
+//      newnode->Delete();
+//      }
+//    if (currentID.compare("") != 0)
+//      {
+//      //qSlicerApplication* app = qobject_cast< qSlicerApplication* > (qSlicerCoreApplication::application());
+//      //qSlicerAppMainWindow * mw = qobject_cast< qSlicerAppMainWindow *>(app->mainWindow());
+//      //if (mw && mw->MouseModeToolBar)
+//      //  {
+//      //  }
+//      //d->AnnotationsLogic->SetActiveHierarchyNodeID(currentID.toLatin1());
+//      selectionNode->SetReferenceActiveAnnotationID(currentID.toLatin1());
+//      //interactionNode->SetPlaceModePersistence(1);
+//      //interactionNode->SetCurrentInteractionMode(vtkMRMLInteractionNode::Place);
+//      interactionNode->SwitchToPersistentPlaceMode();
+//
+//      }
+//    else
+//      {
+//      d->OriginalAnnotationID = "";
+//      }
+//    }
+//  else
+//    {
+//    selectionNode->SetReferenceActiveAnnotationID(d->OriginalAnnotationID.toLatin1());
+//    //interactionNode->SetPlaceModePersistence(0);
+//    //interactionNode->SetCurrentInteractionMode(vtkMRMLInteractionNode::ViewTransform);
+//    interactionNode->SwitchToViewTransformMode();
+//    interactionNode->InvokeEvent(vtkMRMLInteractionNode::EndPlacementEvent);
+//    //d->AnnotationsLogic->SetActiveHierarchyNodeID(d->OriginalAnnotationID.toLatin1());
+//    d->OriginalAnnotationID = "";
+//    }
+//}
 
-//-----------------------------------------------------------------------------
-void qSlicerRegistrationFiducialsPanelWidget
-::switchPlaceMode()
-{
-  // The following code is based on 
-  // void Slicer/Base/QTGUI/qSlicerMouseModeToolBar.cxx (switchPlaceMode())
-  Q_D(qSlicerRegistrationFiducialsPanelWidget);
-
-  vtkSlicerApplicationLogic* appLogic = qSlicerCoreApplication::application()->applicationLogic();
-
-  if (!appLogic)
-    {
-    qWarning() << "Mouse Mode Tool Bar not set up with application logic";
-    return;
-    }
-
-  vtkMRMLInteractionNode * interactionNode = appLogic->GetInteractionNode();
-  if (!interactionNode)
-    {
-    qCritical() << "qSlicerMouseModeToolBar::switchPlaceMode: Cannot get interaction node.";
-    }
-
-  vtkMRMLSelectionNode *selectionNode = appLogic->GetSelectionNode();
-  if (!selectionNode )
-    {
-    qCritical() << "qSlicerMouseModeToolBar::switchPlaceMode: cannot get selection node.";
-    return;
-    }
-
-  if (d->ImagePointsAnnotationNodeSelector)
-    {
-    return;
-    }
-  // If it is already in Place mode, quit and switch the active node to the original
-  if (interactionNode->GetCurrentInteractionMode() == vtkMRMLInteractionNode::Place &&
-      d->OriginalAnnotationID.compare("") != 0)
-    {
-    interactionNode->InvokeEvent(vtkMRMLInteractionNode::EndPlacementEvent);
-    selectionNode->SetReferenceActiveAnnotationID(d->OriginalAnnotationID.toLatin1());
-    d->OriginalAnnotationID = "";
-    }
-  else
-    {
-    d->OriginalAnnotationID = QString(selectionNode->GetActiveAnnotationID());
-    QString currentID = "";
-    vtkMRMLAnnotationHierarchyNode* hnode;
-    hnode = vtkMRMLAnnotationHierarchyNode::SafeDownCast
-      (d->ImagePointsAnnotationNodeSelector->currentNode());
-    
-    if (d->OriginalAnnotationID.compare("") != 0)
-      {
-      if (hnode)
-        {
-        QString hnodeID = hnode->GetID();
-        if (d->OriginalAnnotationID.compare("") == 0)
-          {
-          currentID = hnode->GetID();
-          }
-        }
-      }
-    else
-      {
-      if (hnode)
-        {
-        currentID = hnode->GetID();
-        }
-      }
-    if (currentID.compare("") != 0)
-      {
-      selectionNode->SetReferenceActiveAnnotationID(currentID.toLatin1());
-      interactionNode->SwitchToPersistentPlaceMode();
-      selectionNode->SetReferenceActiveAnnotationID(d->OriginalAnnotationID.toLatin1());
-      //interactionNode->SwitchToSinglePlaceMode();
-      }
-    else
-      {
-      d->OriginalAnnotationID = "";
-      }
-    }
-}

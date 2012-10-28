@@ -69,6 +69,18 @@ void qSlicerPointBasedPatientRegistrationModuleWidget::setup()
 }
 
 //-----------------------------------------------------------------------------
+void qSlicerPointBasedPatientRegistrationModuleWidget::enter()
+{
+  Q_D(qSlicerPointBasedPatientRegistrationModuleWidget);
+
+  this->Superclass::enter();
+  if (d->RegistrationFiducialsPanel)
+    {
+    d->RegistrationFiducialsPanel->enter();
+    }
+}
+
+//-----------------------------------------------------------------------------
 void qSlicerPointBasedPatientRegistrationModuleWidget::setMRMLScene(vtkMRMLScene *newScene)
 {
   Q_D(qSlicerPointBasedPatientRegistrationModuleWidget);

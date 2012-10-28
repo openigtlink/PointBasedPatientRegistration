@@ -23,6 +23,7 @@
 
 #include "vtkMRMLAnnotationHierarchyNode.h"
 #include "vtkMRMLAnnotationFiducialNode.h"
+#include "vtkMRMLAnnotationPointDisplayNode.h"
 #include "vtkMRMLScene.h"
 
 #include "vtkNew.h"
@@ -306,11 +307,11 @@ void qSlicerRegistrationFiducialsTableModel
     fid->SetName(ss.str().c_str());
     double coord[3] = {x, y, z};
     fid->SetFiducialCoordinates(x, y, z);
+    d->Scene->AddNode(fid);
     fid->CreateAnnotationTextDisplayNode();
     fid->CreateAnnotationPointDisplayNode();
-    //fid->GetAnnotationPointDisplayNode()->SetGlyphScale(300);
-    d->Scene->AddNode(fid);
-    //fid->SetParentNodeID(d->HierarchyNode->GetID());
+    fid->GetAnnotationPointDisplayNode()->SetGlyphScale(5);
+    fid->GetAnnotationPointDisplayNode()->SetGlyphType(vtkMRMLAnnotationPointDisplayNode::Sphere3D);
     this->updateTable();
 
     }
