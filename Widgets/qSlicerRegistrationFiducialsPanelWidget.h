@@ -52,6 +52,7 @@ public slots:
   void setPhysicalPointsAnnotationNode(vtkMRMLNode*);
   void onTabSwitched(int);
   void enter();
+  void onRegisterButtonClicked();
 
 protected slots:
   void clearImagePoints();

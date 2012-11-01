@@ -16,7 +16,7 @@
   This file was originally developed by Junichi Tokuda, Brigham and Women's
   Hospital. The project was supported by NIH P41EB015898.
 
-==============================================================================*/
+  ==============================================================================*/
 
 // RegistrationFiducialsPanel Widgets includes
 #include "qSlicerRegistrationFiducialsPanelWidget.h"
@@ -31,6 +31,7 @@
 #include "qSlicerCoreApplication.h"
 #include "qSlicerModuleManager.h"
 #include "qSlicerApplication.h"
+#include "qSlicerCLIModule.h"
 
 #include "vtkObject.h"
 #include "vtkSmartPointer.h"
@@ -39,8 +40,10 @@
 #include "vtkMRMLLinearTransformNode.h"
 #include "vtkMRMLInteractionNode.h"
 #include "vtkMRMLSelectionNode.h"
+#include "vtkMRMLCommandLineModuleNode.h"
 
 #include "vtkSlicerAnnotationModuleLogic.h"
+#include "vtkSlicerCLIModuleLogic.h"
 
 //-----------------------------------------------------------------------------
 /// \ingroup Slicer_QtModules_PointBasedPatientRegistration
@@ -112,7 +115,7 @@ vtkMRMLAnnotationHierarchyNode* qSlicerRegistrationFiducialsPanelWidgetPrivate
     {
     return NULL;
     }
-}  
+}
 
 //-----------------------------------------------------------------------------
 // qSlicerRegistrationFiducialsPanelWidget methods
@@ -121,7 +124,7 @@ vtkMRMLAnnotationHierarchyNode* qSlicerRegistrationFiducialsPanelWidgetPrivate
 qSlicerRegistrationFiducialsPanelWidget
 ::qSlicerRegistrationFiducialsPanelWidget(QWidget* parentWidget)
   : Superclass( parentWidget )
-  , d_ptr( new qSlicerRegistrationFiducialsPanelWidgetPrivate(*this) )
+    , d_ptr( new qSlicerRegistrationFiducialsPanelWidgetPrivate(*this) )
 {
   Q_D(qSlicerRegistrationFiducialsPanelWidget);
   d->setupUi(this);
@@ -130,7 +133,7 @@ qSlicerRegistrationFiducialsPanelWidget
     qSlicerCoreApplication::application()->moduleManager()->module("Annotations");
   if (annotationsModule)
     {
-    d->AnnotationsLogic = 
+    d->AnnotationsLogic =
       vtkSlicerAnnotationModuleLogic::SafeDownCast(annotationsModule->logic());
     }
   vtkMRMLScene * scene = qSlicerCoreApplication::application()->mrmlScene();
@@ -207,7 +210,7 @@ qSlicerRegistrationFiducialsPanelWidget
   if (d->MouseModeToolBar)
     {
     d->MouseModeToolBar->setApplicationLogic(
-                                             qSlicerApplication::application()->applicationLogic());
+      qSlicerApplication::application()->applicationLogic());
     d->MouseModeToolBar->setMRMLScene(qSlicerApplication::application()->mrmlScene());
     QObject::connect(qSlicerApplication::application(),
                      SIGNAL(mrmlSceneChanged(vtkMRMLScene*)),
@@ -218,6 +221,12 @@ qSlicerRegistrationFiducialsPanelWidget
     {
     QObject::connect(d->PointsTabWidget,SIGNAL(currentChanged(int)),
                      this,SLOT(onTabSwitched(int)));
+    }
+
+  if(d->registerButton)
+    {
+    connect(d->registerButton, SIGNAL(clicked()),
+            this, SLOT(onRegisterButtonClicked()));
     }
 }
 
@@ -239,7 +248,7 @@ void qSlicerRegistrationFiducialsPanelWidget
     {
     d->ImagePointsAnnotationNodeSelector->setMRMLScene(newScene);
     // Listen for any new new fiducial points
-    //this->qvtkReconnect(oldScene, newScene, vtkMRMLScene::NodeAddedEvent, 
+    //this->qvtkReconnect(oldScene, newScene, vtkMRMLScene::NodeAddedEvent,
     //this, SLOT(onNodeAddedEvent(vtkObject*,vtkObject*)));
     }
   if (d->PhysicalPointsAnnotationNodeSelector)
@@ -258,6 +267,10 @@ void qSlicerRegistrationFiducialsPanelWidget
     {
     d->TrackerTransformNodeSelector->setMRMLScene(newScene);
     }
+  if(d->OutputTransformNodeSelector)
+    {
+    d->OutputTransformNodeSelector->setMRMLScene(newScene);
+    }
 
 }
 
@@ -271,7 +284,7 @@ void qSlicerRegistrationFiducialsPanelWidget
   if (trans)
     {
     qvtkReconnect(d->TrackerTransform, trans,
-                  vtkMRMLTransformableNode::TransformModifiedEvent, 
+                  vtkMRMLTransformableNode::TransformModifiedEvent,
                   this, SLOT(onTrackerTransformModified()));
     d->TrackerTransform = trans;
     }
@@ -358,7 +371,7 @@ void qSlicerRegistrationFiducialsPanelWidget
 ::enter()
 {
   Q_D(qSlicerRegistrationFiducialsPanelWidget);
-  
+
   if (d->PointsTabWidget)
     {
     int i = d->PointsTabWidget->currentIndex();
@@ -411,7 +424,7 @@ void qSlicerRegistrationFiducialsPanelWidget
   if (d->TrackerTransform && d->PhysicalPointsTableModel && d->AnnotationsLogic)
     {
     // Check the current active AnnotationHierarchy node.
-    // If it is different from the one specified in "Fiducials" menu, 
+    // If it is different from the one specified in "Fiducials" menu,
     // we switch the active node before adding a fiducial node. Once the node
     // is added, we switch back to the original active node.
 
@@ -456,5 +469,37 @@ void qSlicerRegistrationFiducialsPanelWidget
       // Switch the active hierarchy node to the original
       d->AnnotationsLogic->SetActiveHierarchyNodeID(original.c_str());
       }
+    }
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerRegistrationFiducialsPanelWidget
+::onRegisterButtonClicked()
+{
+  Q_D(qSlicerRegistrationFiducialsPanelWidget);
+
+  // Get Fiducial Registration module
+  qSlicerCLIModule* fiducialRegistrationCLI = dynamic_cast<qSlicerCLIModule*>(qSlicerCoreApplication::application()->moduleManager()->module("FiducialRegistration"));
+
+  // Check nodes
+  if((!fiducialRegistrationCLI) ||
+     (!d->PhysicalPointsTableModel || !d->ImagePointsTableModel || !d->OutputTransformNodeSelector) || 
+     (!d->PhysicalPointsAnnotationNodeSelector->currentNode() || !d->ImagePointsAnnotationNodeSelector->currentNode() || !d->OutputTransformNodeSelector->currentNode()))
+    {
+    return;
+    }
+
+  // Same number of points in each list ?
+  if(d->PhysicalPointsTableModel->rowCount() == d->ImagePointsTableModel->rowCount())
+    {
+    // Create New paramater node
+    vtkMRMLCommandLineModuleNode* cliModuleNode = fiducialRegistrationCLI->cliModuleLogic()->CreateNodeInScene();
+    cliModuleNode->SetParameterAsString("fixedLandmarks",d->PhysicalPointsAnnotationNodeSelector->currentNode()->GetID());
+    cliModuleNode->SetParameterAsString("movingLandmarks",d->ImagePointsAnnotationNodeSelector->currentNode()->GetID());
+    cliModuleNode->SetParameterAsString("saveTransform", d->OutputTransformNodeSelector->currentNode()->GetID());
+    cliModuleNode->SetParameterAsString("transformType", "Rigid");
+    
+    // Apply node and register
+    fiducialRegistrationCLI->cliModuleLogic()->Apply(cliModuleNode);
     }
 }
